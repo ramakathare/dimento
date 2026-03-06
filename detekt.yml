@@ -1,0 +1,33 @@
+build:
+  maxIssues: 0
+  weights:
+    complexity: 2
+    formatting: 1
+    LongParameterList: 1
+    comments: 0
+
+config:
+  validation: true
+
+comments:
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+
+complexity:
+  LongMethod:
+    threshold: 60
+  LongParameterList:
+    functionThreshold: 6
+    constructorThreshold: 7
+  TooManyFunctions:
+    thresholdInFiles: 18
+    thresholdInClasses: 15
+    thresholdInInterfaces: 12
+    thresholdInObjects: 12
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated:
+      - Composable
