@@ -1,7 +1,0 @@
-<resources>
-    <string name="app_name">DiMento</string>
-    <string name="past">Past</string>
-    <string name="now">Now</string>
-    <string name="future">Future</string>
-    <string name="manage_events">Manage Events</string>
-</resources>
