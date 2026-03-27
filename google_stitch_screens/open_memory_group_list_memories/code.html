@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>General - Memory Journal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary-container": "#465643",
+              "surface": "#f8faf9",
+              "primary-container": "#9df197",
+              "inverse-on-surface": "#9b9d9d",
+              "on-primary": "#eaffe2",
+              "secondary": "#53634f",
+              "on-secondary-fixed-variant": "#50604c",
+              "surface-container-low": "#f1f4f3",
+              "error": "#a73b21",
+              "primary-fixed": "#9df197",
+              "on-tertiary-container": "#60622d",
+              "on-tertiary-fixed": "#4d501d",
+              "on-primary-fixed": "#00460e",
+              "secondary-dim": "#475744",
+              "secondary-container": "#d6e8ce",
+              "secondary-fixed-dim": "#c7dac1",
+              "on-surface": "#2d3433",
+              "inverse-primary": "#9df197",
+              "surface-container-lowest": "#ffffff",
+              "primary-dim": "#096119",
+              "on-background": "#2d3433",
+              "surface-container-high": "#e4e9e8",
+              "on-error": "#fff7f6",
+              "background": "#f8faf9",
+              "surface-dim": "#d4dbda",
+              "on-primary-container": "#005c15",
+              "primary-fixed-dim": "#90e28a",
+              "on-primary-fixed-variant": "#12661e",
+              "error-dim": "#791903",
+              "surface-variant": "#dde4e3",
+              "tertiary-dim": "#545622",
+              "surface-container-highest": "#dde4e3",
+              "tertiary-container": "#fcfeb9",
+              "on-secondary-fixed": "#344331",
+              "surface-bright": "#f8faf9",
+              "surface-container": "#eaefee",
+              "primary": "#2E7D32",
+              "secondary-fixed": "#d6e8ce",
+              "on-tertiary": "#fcfdb9",
+              "on-surface-variant": "#596060",
+              "tertiary-fixed-dim": "#edefac",
+              "outline": "#757c7b",
+              "on-error-container": "#6e1400",
+              "on-tertiary-fixed-variant": "#6a6d37",
+              "surface-tint": "#2E7D32",
+              "tertiary-fixed": "#fcfeb9",
+              "on-secondary": "#ecfee4",
+              "error-container": "#fd795a",
+              "tertiary": "#60622d",
+              "inverse-surface": "#0b0f0f",
+              "outline-variant": "#acb3b2"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "manrope": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f8faf9;
+            color: #2d3433;
+            font-family: 'Inter', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body selection:bg-primary-container">
+<!-- Top App Bar & Search Header -->
+<header class="fixed top-0 left-0 w-full z-50 bg-emerald-50/80 dark:bg-emerald-950/80 backdrop-blur-xl shadow-sm">
+<!-- Main Top Bar -->
+<div class="flex items-center justify-between px-6 py-4">
+<div class="flex items-center gap-4">
+<button class="p-2 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-200/50 dark:hover:bg-emerald-800/50 transition-colors active:scale-95 duration-200 ease-out rounded-full">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-manrope font-extrabold text-emerald-900 dark:text-emerald-100 text-lg tracking-tight">General</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-200/50 dark:hover:bg-emerald-800/50 transition-colors active:scale-95 duration-200 ease-out rounded-full">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Search Bar Section -->
+<div class="px-6 pb-4">
+<div class="relative flex items-center bg-white dark:bg-surface-container-highest rounded-full px-4 py-2.5 shadow-sm border border-emerald-100 dark:border-emerald-900/30">
+<span class="material-symbols-outlined text-on-surface-variant/50 mr-2">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-sm p-0 placeholder:text-on-surface-variant/40" placeholder="Search memories..." type="text"/>
+</div>
+</div>
+</header>
+<!-- Chat Canvas -->
+<main class="pt-36 pb-32 px-6 max-w-2xl mx-auto min-h-screen flex flex-col gap-10">
+<!-- PAST Section -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-4 px-2">
+<span class="h-px flex-1 bg-surface-container-highest"></span>
+<span class="font-headline font-bold text-xs uppercase tracking-widest text-on-surface-variant">Past Memories</span>
+<span class="h-px flex-1 bg-surface-container-highest"></span>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Memory 1: Watched Durandhar -->
+<div class="flex flex-col items-start max-w-[85%] group">
+<div class="bg-white dark:bg-surface-container-low px-4 py-3 rounded-2xl rounded-tl-none shadow-[0_2px_5px_rgba(0,0,0,0.05)] transition-shadow">
+<p class="text-on-surface text-[15px] leading-relaxed">Watched Durandhar</p>
+</div>
+<span class="mt-1 ml-2 text-[11px] font-semibold text-on-surface-variant/60 uppercase tracking-tighter">Mar 20</span>
+</div>
+<!-- Memory 2: Met John (with Attachment) -->
+<div class="flex flex-col items-start max-w-[85%] group">
+<div class="bg-white dark:bg-surface-container-low p-1.5 rounded-2xl rounded-tl-none shadow-[0_2px_5px_rgba(0,0,0,0.05)] transition-shadow overflow-hidden">
+<img alt="Friends taking a selfie" class="w-full h-48 object-cover rounded-xl mb-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmXLjGBmXCEmAl4rWexNuiLEqcHKPgs_0iDbL-Jn6kTydEX5Ujbnnq3zdCOb08uD_ZdTnG6gYdKsbP5lpXaKWIoq3AD_xNTATT9MzuQXAgdji3CpSj2vexo5ed8RltVSQ6KT0FyxQQfnRN9_KcsRWDWSF7gEA4wsJh3f9d17xsIBMePpuDKyHxLT5Xt2nv5hnWDKkhYi2lV1FIWWKhPStJ92HlIR7ToD4rDzP8MyDDgpGBRHN-g79NevW7xxF5vmslA91BOxbdGWVH"/>
+<div class="px-2.5 pb-1.5">
+<p class="text-on-surface text-[15px] leading-relaxed">Met John</p>
+</div>
+</div>
+<span class="mt-1 ml-2 text-[11px] font-semibold text-on-surface-variant/60 uppercase tracking-tighter">Mar 25</span>
+</div>
+</div>
+</section>
+<!-- TODAY Section -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-4 px-2">
+<span class="h-px flex-1 bg-primary-container/30"></span>
+<span class="font-headline font-bold text-xs uppercase tracking-widest text-primary">Today</span>
+<span class="h-px flex-1 bg-primary-container/30"></span>
+</div>
+<div class="flex flex-col items-end max-w-[85%] self-end group">
+<div class="bg-primary p-1.5 rounded-2xl rounded-tr-none shadow-lg shadow-primary/10 flex flex-col">
+<div class="relative">
+<img alt="Delicious pasta" class="w-full h-40 object-cover rounded-xl mb-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbx-SR7AUeFp_37EC6dD3zdJyEsQ2kZiokOuL8garkXXuGZHiou4oCLJ1uFy2TAwbti4Pqu4QgiolDzmShBYFABHcz-zWIZNaZqEEB-XkUJfNNBucrFlTWEHmem9mrIzcVrJcfixskQvU3lHALEZHQbjNHm-S7Nbuk50MVmahmBVaMPlR5yzcWH5PBngz3gJw43VoOVyw6gZrzg_QGIj_KeBiyzJXQOA7bzJAM7c6HiAvzbq2mWiAh8sXYMVrsb3M7cMhAmwUOaQU0"/>
+<div class="absolute bottom-4 left-2 flex items-center gap-1 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] text-white">
+<span class="material-symbols-outlined text-[12px]">location_on</span>
+                            The Green Bistro
+                        </div>
+</div>
+<div class="flex items-center justify-between px-2.5 pb-1.5">
+<p class="text-on-primary text-[15px] font-medium leading-relaxed">Had a great lunch</p>
+<span class="material-symbols-outlined text-on-primary text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<span class="mt-1 mr-2 text-[11px] font-semibold text-primary/60 uppercase tracking-tighter">Completed</span>
+</div>
+</section>
+<!-- FUTURE Section -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-4 px-2">
+<span class="h-px flex-1 bg-tertiary-container/40"></span>
+<span class="font-headline font-bold text-xs uppercase tracking-widest text-tertiary">Future Plans</span>
+<span class="h-px flex-1 bg-tertiary-container/40"></span>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Memory 4: Pay electricity bill (with PDF preview) -->
+<div class="flex flex-col items-start max-w-[85%] group">
+<div class="bg-tertiary-container/40 rounded-2xl rounded-tl-none border border-tertiary-container/20 overflow-hidden">
+<div class="bg-tertiary/10 p-3 flex items-center gap-3 border-b border-tertiary-container/30">
+<div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-red-600 shadow-sm">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-[13px] font-semibold text-on-tertiary-container truncate">Bill_Mar2024.pdf</p>
+<p class="text-[11px] text-on-tertiary-container/60">1.2 MB • PDF</p>
+</div>
+</div>
+<div class="px-4 py-3 flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-xl">schedule</span>
+<p class="text-on-tertiary-container text-[15px] font-medium leading-relaxed">Pay electricity bill</p>
+</div>
+</div>
+<span class="mt-1 ml-2 text-[11px] font-semibold text-tertiary/60 uppercase tracking-tighter">Apr 1</span>
+</div>
+<!-- Memory 5: Doctor appointment (with Map preview) -->
+<div class="flex flex-col items-start max-w-[85%] group">
+<div class="bg-tertiary-container/40 rounded-2xl rounded-tl-none border border-tertiary-container/20 overflow-hidden">
+<div class="h-32 bg-gray-200 relative">
+<!-- Placeholder for map visual -->
+<img alt="Map location" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpJW0CuJvhMYoz71By3SZn2dyNadYK14KeDGUbPYuIETDx1xFcBPHf2do_0P7LETfrnbM1-0X_jmH6KBamM3Ue2IRe8PsVNwgBrGVE1PzR1LGqTwkQIh5WyehzudRYEhunLqklKgDBgponOO4BuG7ssaHdlHDQxKkJagoDXvRQY-QsT-OBBLPjcB6S0uyMUpFNjO4XPK8ZoJ-kAduZXcx4QB_dAD7O83BJKPX8iIwb_V9nnCGiSePipO_zYrD_8-h-DWPpVPtr-vS9"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+</div>
+</div>
+<div class="px-4 py-3 flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-xl">medical_services</span>
+<p class="text-on-tertiary-container text-[15px] font-medium leading-relaxed">Doctor appointment</p>
+</div>
+</div>
+<span class="mt-1 ml-2 text-[11px] font-semibold text-tertiary/60 uppercase tracking-tighter">Apr 2</span>
+</div>
+</div>
+</section>
+</main>
+<!-- FAB -->
+<button aria-label="Create Event" class="fixed w-16 h-16 bg-[#2E7D32] hover:bg-emerald-800 text-white rounded-full flex items-center justify-center shadow-xl transition-all hover:scale-110 active:scale-95 z-50 bottom-6 right-6">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</body></html>

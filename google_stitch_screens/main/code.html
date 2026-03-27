@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Memories</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Manrope & Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-dim": "#d4dbda",
+              "on-tertiary-fixed": "#4d501d",
+              "tertiary": "#60622d",
+              "surface-container": "#eaefee",
+              "on-tertiary": "#fcfdb9",
+              "secondary": "#53634f",
+              "background": "#f8faf9",
+              "inverse-surface": "#0b0f0f",
+              "error-dim": "#791903",
+              "surface-bright": "#f8faf9",
+              "on-secondary-container": "#465643",
+              "secondary-container": "#d6e8ce",
+              "on-secondary-fixed-variant": "#50604c",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-low": "#f1f4f3",
+              "primary-dim": "#096119",
+              "secondary-fixed": "#d6e8ce",
+              "secondary-dim": "#475744",
+              "on-background": "#2d3433",
+              "on-error-container": "#6e1400",
+              "on-error": "#fff7f6",
+              "tertiary-fixed-dim": "#edefac",
+              "tertiary-container": "#fcfeb9",
+              "primary-fixed-dim": "#90e28a",
+              "primary": "#1c6d25",
+              "secondary-fixed-dim": "#c7dac1",
+              "surface-variant": "#dde4e3",
+              "outline": "#757c7b",
+              "surface": "#f8faf9",
+              "inverse-on-surface": "#9b9d9d",
+              "tertiary-dim": "#545622",
+              "on-primary-container": "#005c15",
+              "error-container": "#fd795a",
+              "primary-container": "#9df197",
+              "primary-fixed": "#9df197",
+              "on-surface": "#2d3433",
+              "on-secondary-fixed": "#344331",
+              "surface-container-highest": "#dde4e3",
+              "on-tertiary-container": "#60622d",
+              "on-secondary": "#ecfee4",
+              "surface-container-high": "#e4e9e8",
+              "on-surface-variant": "#596060",
+              "inverse-primary": "#9df197",
+              "on-primary-fixed-variant": "#12661e",
+              "error": "#a73b21",
+              "outline-variant": "#acb3b2",
+              "on-primary": "#eaffe2",
+              "surface-tint": "#1c6d25",
+              "on-primary-fixed": "#00460e",
+              "on-tertiary-fixed-variant": "#6a6d37",
+              "tertiary-fixed": "#fcfeb9"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        -webkit-tap-highlight-color: transparent;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container">
+<!-- TopAppBar Component (Updated: WhatsApp style) -->
+<header class="sticky top-0 w-full z-50 bg-[#f8faf9] dark:bg-stone-900 border-b border-surface-variant/30">
+<div class="flex items-center justify-between px-6 py-4 w-full">
+<div class="flex items-center gap-4">
+<h1 class="font-['Manrope'] font-bold tracking-tight text-[#2d3433] dark:text-[#f1f4f3] text-2xl">Memories</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-stone-800 transition-colors active:scale-95 duration-200 rounded-full">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-2xl mx-auto px-0 pb-32">
+<!-- Search Bar Section (Preserved as requested) -->
+<div class="px-6 py-4">
+<div class="relative group">
+<div class="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant/60" data-icon="search">search</span>
+</div>
+<input class="w-full bg-surface-container-high border-none h-12 pl-14 pr-6 rounded-full font-body text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all shadow-sm" placeholder="Search memories..." type="text"/>
+</div>
+</div>
+<!-- Filter Chips (Updated: Compact) -->
+<div class="flex gap-2 overflow-x-auto px-6 pb-4 no-scrollbar">
+<button class="px-4 py-1.5 rounded-full bg-primary-container text-on-primary-container font-medium text-xs whitespace-nowrap active:scale-95 duration-200">All</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant font-medium text-xs whitespace-nowrap active:scale-95 duration-200">Unread</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant font-medium text-xs whitespace-nowrap active:scale-95 duration-200">Favorites</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant font-medium text-xs whitespace-nowrap active:scale-95 duration-200">Groups</button>
+</div>
+<!-- Memories / Group List (Updated: Reduced Spacing like WhatsApp) -->
+<section class="divide-y divide-surface-variant/20">
+<!-- Group Item: General -->
+<div class="flex items-center gap-4 px-6 py-3 bg-surface-container-lowest hover:bg-surface-container-low transition-all cursor-pointer active:bg-surface-variant/10">
+<div class="relative w-12 h-12 flex-shrink-0 flex items-center justify-center bg-secondary-container rounded-full overflow-hidden">
+<span class="material-symbols-outlined text-on-secondary-container text-xl" data-icon="potted_plant">potted_plant</span>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-bold text-[#2d3433] truncate">General</h3>
+<span class="text-[10px] font-medium text-primary uppercase">12:45 PM</span>
+</div>
+<div class="flex justify-between items-center">
+<p class="text-sm text-on-surface-variant truncate">Captured a beautiful sunset at the park today...</p>
+<div class="w-2 h-2 rounded-full bg-primary ml-2"></div>
+</div>
+</div>
+</div>
+<!-- Group Item: Recipes -->
+<div class="flex items-center gap-4 px-6 py-3 bg-surface-container-lowest hover:bg-surface-container-low transition-all cursor-pointer active:bg-surface-variant/10">
+<div class="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-surface-container-high rounded-full overflow-hidden">
+<span class="material-symbols-outlined text-on-surface-variant text-xl" data-icon="local_pizza">local_pizza</span>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-bold text-[#2d3433] truncate">Recipes</h3>
+<span class="text-[10px] font-medium text-on-surface-variant/60 uppercase">Yesterday</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate">Grandma's secret pasta sauce ingredients updated.</p>
+</div>
+</div>
+<!-- Group Item: Workout -->
+<div class="flex items-center gap-4 px-6 py-3 bg-surface-container-lowest hover:bg-surface-container-low transition-all cursor-pointer active:bg-surface-variant/10">
+<div class="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-surface-container-high rounded-full overflow-hidden">
+<span class="material-symbols-outlined text-on-surface-variant text-xl" data-icon="fitness_center">fitness_center</span>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-bold text-[#2d3433] truncate">Workout</h3>
+<span class="text-[10px] font-medium text-on-surface-variant/60 uppercase">Monday</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate">Completed the 5k morning run in record time!</p>
+</div>
+</div>
+<!-- Group Item: Travel Journal -->
+<div class="flex items-center gap-4 px-6 py-3 bg-surface-container-lowest hover:bg-surface-container-low transition-all cursor-pointer active:bg-surface-variant/10">
+<div class="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-surface-container-high rounded-full overflow-hidden">
+<span class="material-symbols-outlined text-on-surface-variant text-xl" data-icon="flight_takeoff">flight_takeoff</span>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-bold text-[#2d3433] truncate">Travel Journal</h3>
+<span class="text-[10px] font-medium text-on-surface-variant/60 uppercase">Oct 12</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate">Drafting the itinerary for the Swiss Alps trip.</p>
+</div>
+</div>
+<!-- Group Item: Personal Finance -->
+<div class="flex items-center gap-4 px-6 py-3 bg-surface-container-lowest hover:bg-surface-container-low transition-all cursor-pointer active:bg-surface-variant/10">
+<div class="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-surface-container-high rounded-full overflow-hidden">
+<span class="material-symbols-outlined text-on-surface-variant text-xl" data-icon="payments">payments</span>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-bold text-[#2d3433] truncate">Finance Log</h3>
+<span class="text-[10px] font-medium text-on-surface-variant/60 uppercase">Oct 10</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate">Monthly budget review and savings goal reached.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- FAB Section (Updated: Dual Buttons for Create Group and Create Event) -->
+<div class="fixed bottom-8 right-6 flex flex-col gap-3 items-end z-50">
+<!-- Create Group Small FAB -->
+<button class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-lg active:scale-90 transition-all duration-200 group">
+<span class="material-symbols-outlined text-xl" data-icon="group_add">group_add</span>
+<span class="absolute right-14 bg-on-secondary-container text-on-secondary px-3 py-1 rounded text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">New Group</span>
+</button>
+<!-- Main Create/Event FAB -->
+<button class="w-14 h-14 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-xl active:scale-90 transition-all duration-200 group">
+<span class="material-symbols-outlined text-2xl" data-icon="event">event</span>
+<span class="absolute right-16 bg-on-surface text-surface px-3 py-1 rounded text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">New Event</span>
+</button>
+</div>
+</body></html>
