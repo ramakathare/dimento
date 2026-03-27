@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="http://schemas.android.com/tools">
+    <string name="app_name">DiMento</string>
+    <string name="channel_due_today_description">Reminders for memories scheduled for today</string>
+    <string name="channel_due_today_name">Today\u2019s Memories</string>
+    <style name="Theme.DiMento" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" ns1:targetApi="m">true</item>
+    </style>
+</resources>
