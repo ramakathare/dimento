@@ -142,6 +142,12 @@ class MemoryRepositoryImpl(
         }
     }
 
+    override suspend fun getEventsWithGroupName(groupId: Long): List<Pair<MemoryEvent, String>> {
+        return eventDao.getAllWithGroupNames()
+            .filter { it.groupId == groupId }
+            .map { row -> row.toEventEntity().toDomain() to row.groupName }
+    }
+
     override suspend fun getEventsDueToday(startOfDayMillis: Long, endOfDayMillis: Long): List<MemoryEvent> {
         return eventDao.getDueToday(startOfDayMillis, endOfDayMillis).map { it.toDomain() }
     }

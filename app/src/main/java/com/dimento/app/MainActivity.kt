@@ -73,7 +73,10 @@ private fun DiMentoAppRoot() {
         factory = simpleFactory {
             GroupsViewModel(
                 observeGroupSummariesUseCase = container.observeGroupSummariesUseCase,
-                createGroupUseCase = container.createGroupUseCase
+                createGroupUseCase = container.createGroupUseCase,
+                renameGroupUseCase = container.renameGroupUseCase,
+                deleteGroupUseCase = container.deleteGroupUseCase,
+                searchMemoriesUseCase = container.searchMemoriesUseCase
             )
         }
     )
@@ -95,16 +98,18 @@ private fun DiMentoAppRoot() {
                     createEventSharedViewModel.setSourceGroupId(null)
                     navController.navigate(DiMentoRoute.CreateEvent.create(groupId = null))
                 },
-                onSearch = { navController.navigate(DiMentoRoute.Search.create(groupId = null)) },
-                onExportCsv = {
+                onExportGroupCsv = { groupId ->
                     scope.launch {
                         runCatching {
-                            val export = container.exportEventsCsvUseCase(System.currentTimeMillis())
+                            val export = container.exportGroupEventsCsvUseCase(
+                                groupId = groupId,
+                                nowMillis = System.currentTimeMillis()
+                            )
                             checkNotNull(CsvExporter(context).export(export.fileName, export.content)) {
                                 "Export failed."
                             }
                         }.onSuccess {
-                            Toast.makeText(context, "CSV exported to Downloads", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Group CSV exported to Downloads", Toast.LENGTH_SHORT).show()
                         }.onFailure {
                             Toast.makeText(context, it.message ?: "Export failed", Toast.LENGTH_SHORT).show()
                         }

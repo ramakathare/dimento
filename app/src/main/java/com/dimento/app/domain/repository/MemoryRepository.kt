@@ -35,6 +35,7 @@ interface MemoryRepository {
     suspend fun forwardEvent(eventId: Long, destinationGroupId: Long, recordedDateMillis: Long): Long
     suspend fun search(query: String, groupId: Long?): SearchResult
     suspend fun getAllEventsWithGroupNames(): List<Pair<MemoryEvent, String>>
+    suspend fun getEventsWithGroupName(groupId: Long): List<Pair<MemoryEvent, String>>
     suspend fun getEventsDueToday(startOfDayMillis: Long, endOfDayMillis: Long): List<MemoryEvent>
     suspend fun ensureDefaultGroup()
 }

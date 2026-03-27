@@ -1,1 +1,18 @@
 .vscode/mcp.json
+
+# Gradle and build outputs
+.gradle/
+.kotlin/
+build/
+**/build/
+
+# Local machine config
+local.properties
+
+# IDE files
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
