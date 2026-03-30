@@ -5,8 +5,8 @@ import com.dimento.app.domain.repository.MemoryRepository
 class RenameGroupUseCase(
     private val repository: MemoryRepository
 ) {
-    suspend operator fun invoke(groupId: Long, name: String) {
+    suspend operator fun invoke(groupId: Long, name: String, icon: String?) {
         require(name.isNotBlank()) { "Group name cannot be blank." }
-        repository.renameGroup(groupId, name.trim())
+        repository.renameGroup(groupId, name.trim(), icon)
     }
 }

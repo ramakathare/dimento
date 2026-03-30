@@ -30,7 +30,7 @@ class AppContainer(context: Context) {
         context,
         DiMentoDatabase::class.java,
         "dimento.db"
-    ).build()
+    ).fallbackToDestructiveMigration().build()
 
     val repository: MemoryRepository = MemoryRepositoryImpl(
         database = database,

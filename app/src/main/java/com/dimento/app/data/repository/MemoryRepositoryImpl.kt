@@ -38,13 +38,13 @@ class MemoryRepositoryImpl(
 
     override suspend fun getGroup(groupId: Long): MemoryGroup? = groupDao.getById(groupId)?.toDomain()
 
-    override suspend fun createGroup(name: String): Long {
-        return groupDao.insert(MemoryGroupEntity(name = name, createdAtMillis = System.currentTimeMillis()))
+    override suspend fun createGroup(name: String, icon: String?): Long {
+        return groupDao.insert(MemoryGroupEntity(name = name, icon = icon, createdAtMillis = System.currentTimeMillis()))
     }
 
-    override suspend fun renameGroup(groupId: Long, name: String) {
+    override suspend fun renameGroup(groupId: Long, name: String, icon: String?) {
         val group = groupDao.getById(groupId) ?: return
-        groupDao.update(group.copy(name = name))
+        groupDao.update(group.copy(name = name, icon = icon))
     }
 
     override suspend fun deleteGroup(groupId: Long) {

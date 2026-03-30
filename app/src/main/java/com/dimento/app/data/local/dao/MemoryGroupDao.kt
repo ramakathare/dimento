@@ -37,6 +37,7 @@ interface MemoryGroupDao {
         SELECT
             g.id AS groupId,
             g.name AS name,
+            g.icon AS icon,
             (
                 SELECT e.text FROM memory_events e
                 WHERE e.groupId = g.id

@@ -10,6 +10,7 @@ import com.dimento.app.domain.model.MemoryGroup
 fun MemoryGroupEntity.toDomain(): MemoryGroup = MemoryGroup(
     id = id,
     name = name,
+    icon = icon,
     createdAtMillis = createdAtMillis
 )
 
@@ -26,6 +27,7 @@ fun MemoryEventEntity.toDomain(): MemoryEvent = MemoryEvent(
 fun GroupSummaryRow.toDomain(): GroupSummary = GroupSummary(
     groupId = groupId,
     name = name,
+    icon = icon,
     lastMessage = lastMessage,
     lastEventDateMillis = lastEventDateMillis,
     hasFutureEvents = futureEventCount > 0

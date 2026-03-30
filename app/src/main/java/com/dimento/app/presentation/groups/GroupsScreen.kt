@@ -1,23 +1,44 @@
 package com.dimento.app.presentation.groups
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.DirectionsBike
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Apartment
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PrecisionManufacturing
+import androidx.compose.material.icons.filled.RealEstateAgent
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -40,12 +61,18 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.dimento.app.R
 import com.dimento.app.domain.model.SearchResult
 import com.dimento.app.presentation.components.GroupItem
@@ -67,6 +94,7 @@ fun GroupsScreen(
     var showCreateGroup by remember { mutableStateOf(false) }
     var showRenameGroup by remember { mutableStateOf(false) }
     var groupName by remember { mutableStateOf("") }
+    var groupIcon by remember { mutableStateOf<String?>(null) }
     var selectedGroupId by remember { mutableLongStateOf(-1L) }
 
     val selectedGroup = groups.firstOrNull { it.groupId == selectedGroupId }
@@ -125,6 +153,7 @@ fun GroupsScreen(
                             IconButton(
                                 onClick = {
                                     groupName = selectedGroup.name
+                                    groupIcon = null // In real app, load current icon here
                                     showRenameGroup = true
                                 }
                             ) {
@@ -169,7 +198,11 @@ fun GroupsScreen(
         floatingActionButton = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 FloatingActionButton(
-                    onClick = { showCreateGroup = true },
+                    onClick = {
+                        groupName = ""
+                        groupIcon = null
+                        showCreateGroup = true
+                    },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ) {
                     Icon(imageVector = Icons.Default.AddCircle, contentDescription = "New group")
@@ -185,14 +218,13 @@ fun GroupsScreen(
             GroupNameDialog(
                 title = "Create Group",
                 actionLabel = "Create",
-                initialValue = groupName,
+                initialName = groupName,
+                initialIcon = groupIcon,
                 onDismiss = {
                     showCreateGroup = false
-                    groupName = ""
                 },
-                onConfirm = { value ->
-                    viewModel.createGroup(value)
-                    groupName = ""
+                onConfirm = { name, icon ->
+                    viewModel.createGroup(name, icon)
                     showCreateGroup = false
                 }
             )
@@ -202,10 +234,11 @@ fun GroupsScreen(
             GroupNameDialog(
                 title = "Edit Group",
                 actionLabel = "Save",
-                initialValue = groupName,
+                initialName = groupName,
+                initialIcon = groupIcon,
                 onDismiss = { showRenameGroup = false },
-                onConfirm = { value ->
-                    viewModel.renameGroup(selectedGroup.groupId, value)
+                onConfirm = { name, icon ->
+                    viewModel.renameGroup(selectedGroup.groupId, name, icon)
                     showRenameGroup = false
                     selectedGroupId = -1L
                 }
@@ -316,21 +349,97 @@ private fun SearchResultRow(
     subtitle: String,
     onClick: () -> Unit
 ) {
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+fun GroupIconView(
+    name: String,
+    icon: String?,
+    size: androidx.compose.ui.unit.Dp,
+    fontSize: androidx.compose.ui.unit.TextUnit = 16.sp
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.secondaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        if (icon != null) {
+            if (icon.startsWith("vector:")) {
+                val iconName = icon.removePrefix("vector:")
+                val vector = getVectorIconByName(iconName)
+                Icon(
+                    imageVector = vector,
+                    contentDescription = null,
+                    modifier = Modifier.size(size * 0.6f),
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            } else {
+                AsyncImage(
+                    model = icon,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        } else {
+            val initials = remember(name) {
+                if (name.isBlank()) "?" 
+                else name.split(" ")
+                    .filter { it.isNotBlank() }
+                    .take(2)
+                    .map { it.take(2) }
+                    .joinToString("")
+                    .uppercase()
+            }
+            Text(
+                text = initials,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = fontSize,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+    }
+}
+
+private fun getVectorIconByName(name: String): ImageVector {
+    return when (name) {
+        "work" -> Icons.Default.Work
+        "office" -> Icons.Default.Apartment
+        "machine" -> Icons.Default.PrecisionManufacturing
+        "bike" -> Icons.AutoMirrored.Filled.DirectionsBike
+        "car" -> Icons.Default.DirectionsCar
+        "person" -> Icons.Default.Person
+        "group" -> Icons.Default.Group
+        "team" -> Icons.Default.Groups
+        "building" -> Icons.Default.Apartment
+        "real_estate" -> Icons.Default.RealEstateAgent
+        "tools" -> Icons.Default.Build
+        else -> Icons.Default.AddCircle
     }
 }
 
@@ -338,16 +447,28 @@ private fun SearchResultRow(
 private fun GroupNameDialog(
     title: String,
     actionLabel: String,
-    initialValue: String,
+    initialName: String,
+    initialIcon: String?,
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    onConfirm: (String, String?) -> Unit
 ) {
-    var value by remember(initialValue) { mutableStateOf(initialValue) }
+    var name by remember(initialName) { mutableStateOf(initialName) }
+    var icon by remember(initialIcon) { mutableStateOf(initialIcon) }
+
+    val pickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { icon = it.toString() }
+    }
+
+    val cliparts = listOf(
+        "work", "office", "machine", "bike", "car", "person", "group", "team", "building", "real_estate", "tools"
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = { onConfirm(value) }) {
+            TextButton(onClick = { onConfirm(name, icon) }) {
                 Text(actionLabel)
             }
         },
@@ -358,18 +479,71 @@ private fun GroupNameDialog(
         },
         title = { Text(title) },
         text = {
-            TextField(
-                value = value,
-                onValueChange = { value = it },
-                placeholder = { Text("Group name") },
-                singleLine = true,
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    GroupIconView(name = name, icon = icon, size = 64.dp, fontSize = 20.sp)
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = { pickerLauncher.launch("image/*") }) {
+                            Text("Change Photo")
+                        }
+                        if (icon != null) {
+                            TextButton(onClick = { icon = null }) {
+                                Text("Remove", color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                    }
+                }
+
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    placeholder = { Text("Group name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    )
                 )
-            )
+
+                Text("Pick a clipart", style = MaterialTheme.typography.labelMedium)
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
+                ) {
+                    items(cliparts) { clipart ->
+                        val vector = getVectorIconByName(clipart)
+                        val isSelected = icon == "vector:$clipart"
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                    else MaterialTheme.colorScheme.surfaceVariant
+                                )
+                                .border(
+                                    width = 2.dp,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    shape = CircleShape
+                                )
+                                .clickable { icon = "vector:$clipart" },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = vector,
+                                contentDescription = clipart,
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
         }
     )
 }

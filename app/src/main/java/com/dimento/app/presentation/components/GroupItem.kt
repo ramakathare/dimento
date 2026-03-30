@@ -4,12 +4,10 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -24,8 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dimento.app.domain.model.GroupSummary
+import com.dimento.app.presentation.groups.GroupIconView
 import com.dimento.app.presentation.theme.Primary
-import com.dimento.app.presentation.theme.SecondaryContainer
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -56,12 +54,12 @@ fun GroupItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 2.dp, vertical = 5.dp),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(52.dp)
-                    .background(SecondaryContainer, CircleShape)
+            GroupIconView(
+                name = summary.name,
+                icon = summary.icon,
+                size = 52.dp
             )
             Spacer(modifier = Modifier.size(16.dp))
             Column(
@@ -116,4 +114,9 @@ fun GroupItem(
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         )
     }
+}
+
+@Composable
+private fun Box(modifier: Modifier) {
+    androidx.compose.foundation.layout.Box(modifier = modifier)
 }
