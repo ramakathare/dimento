@@ -3,7 +3,9 @@ package com.dimento.app.presentation.create
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,20 +20,21 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.dimento.app.presentation.theme.SurfaceContainerHigh
-import java.util.Calendar
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -47,6 +50,7 @@ fun CreateEventScreen(
     val draft by viewModel.draft.collectAsState()
     val formatter = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
     val sourceGroupId = draft.sourceGroupId
+    val maxChars = 200
 
     val openDateTimePicker = {
         val calendar = Calendar.getInstance().apply { timeInMillis = draft.eventDateMillis }
@@ -86,38 +90,56 @@ fun CreateEventScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
-                value = formatter.format(Date(draft.eventDateMillis)),
-                onValueChange = {},
-                label = { Text("When did it happen?") },
-                readOnly = true,
-                modifier = Modifier.fillMaxWidth(),
-                trailingIcon = {
-                    IconButton(onClick = openDateTimePicker) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { openDateTimePicker() }
+            ) {
+                TextField(
+                    value = formatter.format(Date(draft.eventDateMillis)),
+                    onValueChange = {},
+                    label = { Text("When?") },
+                    readOnly = true,
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
                         Icon(imageVector = Icons.Default.DateRange, contentDescription = "Pick date")
-                    }
-                },
-                shape = RoundedCornerShape(20.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = SurfaceContainerHigh,
-                    unfocusedContainerColor = SurfaceContainerHigh
+                    },
+                    colors = TextFieldDefaults.colors(
+                        disabledContainerColor = Color.Transparent,
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-            )
-            OutlinedTextField(
-                value = draft.text,
-                onValueChange = viewModel::updateText,
-                label = { Text("What's the memory?") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 6,
-                shape = RoundedCornerShape(20.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = SurfaceContainerHigh,
-                    unfocusedContainerColor = SurfaceContainerHigh
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextField(
+                    value = draft.text,
+                    onValueChange = viewModel::updateText,
+                    label = { Text("What?") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 1,
+                    maxLines = Int.MAX_VALUE,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    )
                 )
-            )
+                Text(
+                    text = "${draft.text.length} / $maxChars",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (draft.text.length >= maxChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.End)
+                )
+            }
 
             Button(
                 onClick = {
