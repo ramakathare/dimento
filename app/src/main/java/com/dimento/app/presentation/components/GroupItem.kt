@@ -55,7 +55,7 @@ fun GroupItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 2.dp, vertical = 5.dp),
             verticalAlignment = Alignment.Top
         ) {
             Box(

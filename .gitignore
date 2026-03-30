@@ -1,18 +1,23 @@
-.vscode/mcp.json
-
-# Gradle and build outputs
-.gradle/
-.kotlin/
-build/
-**/build/
-
-# Local machine config
-local.properties
-
-# IDE files
-.idea/
 *.iml
-
-# OS files
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.idea/codeStyles
+.idea/shelf
+.idea/vcs.xml
+.idea/inspectionProfiles
+.idea/modules
+/build
+**/build
+*.lock
 .DS_Store
-Thumbs.db
+/captures
+.externalNativeBuild
+.cxx
+.kotlin
+.vscode
