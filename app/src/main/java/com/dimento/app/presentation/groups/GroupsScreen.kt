@@ -75,9 +75,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.dimento.app.R
 import com.dimento.app.domain.model.SearchResult
+import com.dimento.app.presentation.components.AppBackground
 import com.dimento.app.presentation.components.GroupItem
-import com.dimento.app.presentation.components.ListBackground
-import com.dimento.app.presentation.theme.Surface
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,189 +117,195 @@ fun GroupsScreen(
         }
     }
 
-    Scaffold(
-        containerColor = Surface,
-        topBar = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                TopAppBar(
-                    title = {
-                        Text(
-                            if (selectedGroup != null) selectedGroup.name else stringResource(R.string.app_name),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    navigationIcon = {
-                        if (hasOverlayState || query.isNotBlank()) {
-                            IconButton(
-                                onClick = {
-                                    if (selectedGroup != null) {
-                                        selectedGroupId = -1L
-                                    } else {
-                                        viewModel.onQueryChange("")
+    Box(modifier = Modifier.fillMaxSize()) {
+        AppBackground(Modifier.fillMaxSize())
+
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                if (selectedGroup != null) selectedGroup.name else stringResource(R.string.app_name),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        navigationIcon = {
+                            if (hasOverlayState || query.isNotBlank()) {
+                                IconButton(
+                                    onClick = {
+                                        if (selectedGroup != null) {
+                                            selectedGroupId = -1L
+                                        } else {
+                                            viewModel.onQueryChange("")
+                                        }
                                     }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back"
+                                    )
                                 }
-                            ) {
-                                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                            }
-                        }
-                    },
-                    actions = {
-                        if (selectedGroup != null) {
-                            IconButton(onClick = { onExportGroupCsv(selectedGroup.groupId) }) {
-                                Icon(
-                                    imageVector = Icons.Default.FileDownload,
-                                    contentDescription = "Export group"
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    groupName = selectedGroup.name
-                                    groupIcon = selectedGroup.icon
-                                    groupDescription = selectedGroup.description
-                                    showRenameGroup = true
-                                }
-                            ) {
-                                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit group")
-                            }
-                            IconButton(
-                                onClick = {
-                                    viewModel.deleteGroup(selectedGroup.groupId)
-                                    selectedGroupId = -1L
-                                }
-                            ) {
-                                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete group")
-                            }
-                        }
-                    }
-                )
-
-                TextField(
-                    value = query,
-                    onValueChange = {
-                        if (selectedGroup != null) selectedGroupId = -1L
-                        viewModel.onQueryChange(it)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 0.dp),
-                    placeholder = { Text("Search memories") },
-                    singleLine = true,
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        disabledContainerColor = Color.Transparent,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    )
-                )
-            }
-        },
-        floatingActionButton = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                FloatingActionButton(
-                    onClick = {
-                        groupName = ""
-                        groupIcon = null
-                        groupDescription = null
-                        showCreateGroup = true
-                    },
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                ) {
-                    Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = "New group")
-                }
-                FloatingActionButton(onClick = onCreateEventFromFab) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "New event")
-                }
-            }
-        },
-        snackbarHost = { SnackbarHost(hostState = snackbars) }
-    ) { inner ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            ListBackground(Modifier.fillMaxSize())
-
-            if (showCreateGroup) {
-                GroupNameDialog(
-                    title = "Create Group",
-                    actionLabel = "Create",
-                    initialName = groupName,
-                    initialIcon = groupIcon,
-                    initialDescription = groupDescription,
-                    onDismiss = {
-                        showCreateGroup = false
-                        groupDescription = null
-                    },
-                    onConfirm = { name, icon, description ->
-                        viewModel.createGroup(name, icon, description)
-                        showCreateGroup = false
-                        groupDescription = null
-                    }
-                )
-            }
-
-            if (showRenameGroup && selectedGroup != null) {
-            GroupNameDialog(
-                title = "Edit Group",
-                actionLabel = "Save",
-                initialName = groupName,
-                initialIcon = groupIcon,
-                initialDescription = groupDescription,
-                onDismiss = { showRenameGroup = false },
-                onConfirm = { name, icon, description ->
-                    viewModel.renameGroup(selectedGroup.groupId, name, icon, description)
-                    showRenameGroup = false
-                    selectedGroupId = -1L
-                }
-            )
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(inner),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            if (query.isBlank()) {
-                items(items = groups, key = { it.groupId }) { summary ->
-                    GroupItem(
-                        summary = summary,
-                        selected = summary.groupId == selectedGroupId,
-                        onClick = {
-                            if (selectedGroupId == summary.groupId) {
-                                selectedGroupId = -1L
-                            } else if (selectedGroupId != -1L) {
-                                selectedGroupId = summary.groupId
-                            } else {
-                                onOpenGroup(summary.groupId)
                             }
                         },
-                        onLongClick = { selectedGroupId = summary.groupId }
+                        actions = {
+                            if (selectedGroup != null) {
+                                IconButton(onClick = { onExportGroupCsv(selectedGroup.groupId) }) {
+                                    Icon(
+                                        imageVector = Icons.Default.FileDownload,
+                                        contentDescription = "Export group"
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        groupName = selectedGroup.name
+                                        groupIcon = selectedGroup.icon
+                                        groupDescription = selectedGroup.description
+                                        showRenameGroup = true
+                                    }
+                                ) {
+                                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit group")
+                                }
+                                IconButton(
+                                    onClick = {
+                                        viewModel.deleteGroup(selectedGroup.groupId)
+                                        selectedGroupId = -1L
+                                    }
+                                ) {
+                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete group")
+                                }
+                            }
+                        }
+                    )
+
+                    TextField(
+                        value = query,
+                        onValueChange = {
+                            if (selectedGroup != null) selectedGroupId = -1L
+                            viewModel.onQueryChange(it)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        placeholder = { Text("Search memories") },
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        )
                     )
                 }
-                if (groups.isEmpty()) {
-                    item {
-                        Text(
-                            text = "No memory groups yet.",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            floatingActionButton = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    FloatingActionButton(
+                        onClick = {
+                            groupName = ""
+                            groupIcon = null
+                            groupDescription = null
+                            showCreateGroup = true
+                        },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = "New group")
+                    }
+                    FloatingActionButton(onClick = onCreateEventFromFab) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "New event")
+                    }
+                }
+            },
+            snackbarHost = { SnackbarHost(hostState = snackbars) }
+        ) { inner ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (showCreateGroup) {
+                    GroupNameDialog(
+                        title = "Create Group",
+                        actionLabel = "Create",
+                        initialName = groupName,
+                        initialIcon = groupIcon,
+                        initialDescription = groupDescription,
+                        onDismiss = {
+                            showCreateGroup = false
+                            groupDescription = null
+                        },
+                        onConfirm = { name, icon, description ->
+                            viewModel.createGroup(name, icon, description)
+                            showCreateGroup = false
+                            groupDescription = null
+                        }
+                    )
+                }
+
+                if (showRenameGroup && selectedGroup != null) {
+                    GroupNameDialog(
+                        title = "Edit Group",
+                        actionLabel = "Save",
+                        initialName = groupName,
+                        initialIcon = groupIcon,
+                        initialDescription = groupDescription,
+                        onDismiss = { showRenameGroup = false },
+                        onConfirm = { name, icon, description ->
+                            viewModel.renameGroup(selectedGroup.groupId, name, icon, description)
+                            showRenameGroup = false
+                            selectedGroupId = -1L
+                        }
+                    )
+                }
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(inner),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (query.isBlank()) {
+                        items(items = groups, key = { it.groupId }) { summary ->
+                            GroupItem(
+                                summary = summary,
+                                selected = summary.groupId == selectedGroupId,
+                                onClick = {
+                                    if (selectedGroupId == summary.groupId) {
+                                        selectedGroupId = -1L
+                                    } else if (selectedGroupId != -1L) {
+                                        selectedGroupId = summary.groupId
+                                    } else {
+                                        onOpenGroup(summary.groupId)
+                                    }
+                                },
+                                onLongClick = { selectedGroupId = summary.groupId }
+                            )
+                        }
+
+                        if (groups.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "No memory groups yet.",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(24.dp),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    } else {
+                        searchContent(
+                            results = results,
+                            onOpenGroup = onOpenGroup
                         )
                     }
                 }
-            } else {
-                searchContent(
-                    results = results,
-                    onOpenGroup = onOpenGroup
-                )
             }
         }
     }
-}
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.searchContent(
@@ -429,7 +434,7 @@ fun GroupIconView(
             }
         } else {
             val initials = remember(name) {
-                if (name.isBlank()) "?" 
+                if (name.isBlank()) "?"
                 else name.split(" ")
                     .filter { it.isNotBlank() }
                     .take(2)
@@ -555,7 +560,11 @@ private fun GroupNameDialog(
                 Text(
                     text = "${description.length} / $maxDescriptionChars",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (description.length >= maxDescriptionChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (description.length >= maxDescriptionChars) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
                     modifier = Modifier.align(Alignment.End)
                 )
 

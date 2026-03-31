@@ -30,11 +30,12 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.dimento.app.presentation.components.AppBackground
 import com.dimento.app.presentation.components.DateHeader
 import com.dimento.app.presentation.components.EventBubble
 import com.dimento.app.presentation.components.InputBar
-import com.dimento.app.presentation.components.ListBackground
 import com.dimento.app.presentation.model.TimelineItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,34 +86,35 @@ fun GroupTimelineScreen(
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(group?.name ?: "Group") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { onSearchInGroup(groupId) }) {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onCreateInGroup(groupId) }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Create event")
-            }
-        },
-        bottomBar = {
-            InputBar(onSend = viewModel::addQuickEvent)
-        }
-    ) { inner ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            ListBackground(Modifier.fillMaxSize())
+    Box(modifier = Modifier.fillMaxSize()) {
+        AppBackground(Modifier.fillMaxSize())
 
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = { Text(group?.name ?: "Group") },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { onSearchInGroup(groupId) }) {
+                            Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                        }
+                    }
+                )
+            },
+            floatingActionButton = {
+                FloatingActionButton(onClick = { onCreateInGroup(groupId) }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Create event")
+                }
+            },
+            bottomBar = {
+                InputBar(onSend = viewModel::addQuickEvent)
+            }
+        ) { inner ->
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()

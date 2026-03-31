@@ -29,7 +29,7 @@ private const val LIGHT_CACHE_FILE = "list_background_bubbles_light_v1.json"
 private const val DARK_CACHE_FILE = "list_background_bubbles_dark_v1.json"
 
 @Composable
-fun ListBackground(modifier: Modifier = Modifier) {
+fun AppBackground(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val isDark = isSystemInDarkTheme()
     val palette = remember(isDark) { backgroundPalette(isDark) }
