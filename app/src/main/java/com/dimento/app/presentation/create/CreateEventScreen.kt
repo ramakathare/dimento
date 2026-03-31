@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.dimento.app.presentation.components.AppBackground
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -80,95 +80,95 @@ fun CreateEventScreen(
         ).show()
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AppBackground(Modifier.fillMaxSize())
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
+        TopAppBar(
+            title = { Text("Create Event") },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent
+            )
+        )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TopAppBar(
-                title = { Text("Create Event") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxWidth()
+                    .clickable { openDateTimePicker() }
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { openDateTimePicker() }
-                ) {
-                    TextField(
-                        value = formatter.format(Date(draft.eventDateMillis)),
-                        onValueChange = {},
-                        label = { Text("When?") },
-                        readOnly = true,
-                        enabled = false,
-                        modifier = Modifier.fillMaxWidth(),
-                        trailingIcon = {
-                            Icon(imageVector = Icons.Default.DateRange, contentDescription = "Pick date")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            disabledContainerColor = Color.Transparent,
-                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                }
-
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TextField(
-                        value = draft.text,
-                        onValueChange = viewModel::updateText,
-                        label = { Text("What?") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 1,
-                        maxLines = Int.MAX_VALUE,
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        )
-                    )
-                    Text(
-                        text = "${draft.text.length} / $maxChars",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (draft.text.length >= maxChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.align(Alignment.End)
-                    )
-                }
-
-                Row(
+                TextField(
+                    value = formatter.format(Date(draft.eventDateMillis)),
+                    onValueChange = {},
+                    label = { Text("When?") },
+                    readOnly = true,
+                    enabled = false,
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    trailingIcon = {
+                        Icon(imageVector = Icons.Default.DateRange, contentDescription = "Pick date")
+                    },
+                    colors = TextFieldDefaults.colors(
+                        disabledContainerColor = Color.Transparent,
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextField(
+                    value = draft.text,
+                    onValueChange = viewModel::updateText,
+                    label = { Text("What?") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 1,
+                    maxLines = Int.MAX_VALUE,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    )
+                )
+                Text(
+                    text = "${draft.text.length} / $maxChars",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (draft.text.length >= maxChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.End)
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(
+                    onClick = {
+                        if (sourceGroupId == null) onNextSelectGroup() else onSaveDirectToGroup(sourceGroupId)
+                    },
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape)
                 ) {
-                    IconButton(
-                        onClick = {
-                            if (sourceGroupId == null) onNextSelectGroup() else onSaveDirectToGroup(sourceGroupId)
-                        },
-                        modifier = Modifier
-                            .size(56.dp)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = if (sourceGroupId == null) "Next" else "Send",
-                            tint = Color.White
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = if (sourceGroupId == null) "Next" else "Send",
+                        tint = Color.White
+                    )
                 }
             }
         }

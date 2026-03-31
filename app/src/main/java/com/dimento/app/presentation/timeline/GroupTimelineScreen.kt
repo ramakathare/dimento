@@ -22,6 +22,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.dimento.app.presentation.components.AppBackground
 import com.dimento.app.presentation.components.DateHeader
 import com.dimento.app.presentation.components.EventBubble
 import com.dimento.app.presentation.components.InputBar
@@ -86,72 +86,72 @@ fun GroupTimelineScreen(
         )
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AppBackground(Modifier.fillMaxSize())
-
-        Scaffold(
-            containerColor = Color.Transparent,
-            topBar = {
-                TopAppBar(
-                    title = { Text(group?.name ?: "Group") },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { onSearchInGroup(groupId) }) {
-                            Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
-                        }
+    Scaffold(
+        containerColor = Color.Transparent,
+        topBar = {
+            TopAppBar(
+                title = { Text(group?.name ?: "Group") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    IconButton(onClick = { onSearchInGroup(groupId) }) {
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
                 )
-            },
-            floatingActionButton = {
-                FloatingActionButton(onClick = { onCreateInGroup(groupId) }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Create event")
-                }
-            },
-            bottomBar = {
-                InputBar(onSend = viewModel::addQuickEvent)
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { onCreateInGroup(groupId) }) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Create event")
             }
-        ) { inner ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(inner),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(items = items, key = { item ->
-                    when (item) {
-                        is TimelineItem.Header -> "header_${item.type}"
-                        is TimelineItem.EventRow -> "event_${item.event.id}"
-                    }
-                }) { item ->
-                    when (item) {
-                        is TimelineItem.Header -> DateHeader(type = item.type)
-                        is TimelineItem.EventRow -> EventBubble(
-                            event = item.event,
-                            type = item.type,
-                            onMarkComplete = { viewModel.markComplete(item.event.id) },
-                            onDelete = { viewModel.delete(item.event.id) },
-                            onForward = {
-                                forwardEventId = item.event.id
-                                if (destinationGroupId <= 0) {
-                                    destinationGroupId = groups.firstOrNull { it.id != groupId }?.id ?: -1L
-                                }
-                            }
-                        )
-                    }
+        },
+        bottomBar = {
+            InputBar(onSend = viewModel::addQuickEvent)
+        }
+    ) { inner ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(inner),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(items = items, key = { item ->
+                when (item) {
+                    is TimelineItem.Header -> "header_${item.type}"
+                    is TimelineItem.EventRow -> "event_${item.event.id}"
                 }
+            }) { item ->
+                when (item) {
+                    is TimelineItem.Header -> DateHeader(type = item.type)
+                    is TimelineItem.EventRow -> EventBubble(
+                        event = item.event,
+                        type = item.type,
+                        onMarkComplete = { viewModel.markComplete(item.event.id) },
+                        onDelete = { viewModel.delete(item.event.id) },
+                        onForward = {
+                            forwardEventId = item.event.id
+                            if (destinationGroupId <= 0) {
+                                destinationGroupId = groups.firstOrNull { it.id != groupId }?.id ?: -1L
+                            }
+                        }
+                    )
+                }
+            }
 
-                if (items.isEmpty()) {
-                    item {
-                        Text(
-                            text = "No memories in this group.",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+            if (items.isEmpty()) {
+                item {
+                    Text(
+                        text = "No memories in this group.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

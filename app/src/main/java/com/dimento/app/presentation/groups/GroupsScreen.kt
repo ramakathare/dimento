@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DirectionsBike
@@ -48,11 +51,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -65,17 +70,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.dimento.app.R
 import com.dimento.app.domain.model.SearchResult
-import com.dimento.app.presentation.components.AppBackground
 import com.dimento.app.presentation.components.GroupItem
 import kotlin.math.absoluteValue
 
@@ -117,114 +123,106 @@ fun GroupsScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AppBackground(Modifier.fillMaxSize())
-
-        Scaffold(
-            containerColor = Color.Transparent,
-            topBar = {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                if (selectedGroup != null) selectedGroup.name else stringResource(R.string.app_name),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        },
-                        navigationIcon = {
-                            if (hasOverlayState || query.isNotBlank()) {
-                                IconButton(
-                                    onClick = {
-                                        if (selectedGroup != null) {
-                                            selectedGroupId = -1L
-                                        } else {
-                                            viewModel.onQueryChange("")
-                                        }
+    Scaffold(
+        containerColor = Color.Transparent,
+        topBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+            ) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            if (selectedGroup != null) selectedGroup.name else stringResource(R.string.app_name),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    navigationIcon = {
+                        if (hasOverlayState || query.isNotBlank()) {
+                            IconButton(
+                                onClick = {
+                                    if (selectedGroup != null) {
+                                        selectedGroupId = -1L
+                                    } else {
+                                        viewModel.onQueryChange("")
                                     }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Back"
-                                    )
                                 }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
                             }
-                        },
-                        actions = {
-                            if (selectedGroup != null) {
-                                IconButton(onClick = { onExportGroupCsv(selectedGroup.groupId) }) {
-                                    Icon(
-                                        imageVector = Icons.Default.FileDownload,
-                                        contentDescription = "Export group"
-                                    )
-                                }
-                                IconButton(
+                        }
+                    },
+                    actions = {
+                        if (selectedGroup != null) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                GroupHeaderAction(
+                                    icon = Icons.Default.FileDownload,
+                                    contentDescription = "Export group",
+                                    onClick = { onExportGroupCsv(selectedGroup.groupId) }
+                                )
+                                GroupHeaderAction(
+                                    icon = Icons.Default.Edit,
+                                    contentDescription = "Edit group",
                                     onClick = {
                                         groupName = selectedGroup.name
                                         groupIcon = selectedGroup.icon
                                         groupDescription = selectedGroup.description
                                         showRenameGroup = true
                                     }
-                                ) {
-                                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit group")
-                                }
-                                IconButton(
+                                )
+                                GroupHeaderAction(
+                                    icon = Icons.Default.Delete,
+                                    contentDescription = "Delete group",
+                                    tint = MaterialTheme.colorScheme.error,
                                     onClick = {
                                         viewModel.deleteGroup(selectedGroup.groupId)
                                         selectedGroupId = -1L
                                     }
-                                ) {
-                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete group")
-                                }
+                                )
                             }
                         }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent
                     )
+                )
 
-                    TextField(
-                        value = query,
-                        onValueChange = {
-                            if (selectedGroup != null) selectedGroupId = -1L
-                            viewModel.onQueryChange(it)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        placeholder = { Text("Search memories") },
-                        singleLine = true,
-                        leadingIcon = {
-                            Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        )
-                    )
-                }
-            },
-            floatingActionButton = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    FloatingActionButton(
-                        onClick = {
-                            groupName = ""
-                            groupIcon = null
-                            groupDescription = null
-                            showCreateGroup = true
-                        },
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    ) {
-                        Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = "New group")
+                SearchIsland(
+                    query = query,
+                    onQueryChange = {
+                        if (selectedGroup != null) selectedGroupId = -1L
+                        viewModel.onQueryChange(it)
                     }
-                    FloatingActionButton(onClick = onCreateEventFromFab) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "New event")
-                    }
+                )
+            }
+        },
+        floatingActionButton = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                FloatingActionButton(
+                    onClick = {
+                        groupName = ""
+                        groupIcon = null
+                        groupDescription = null
+                        showCreateGroup = true
+                    },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = "New group")
                 }
-            },
-            snackbarHost = { SnackbarHost(hostState = snackbars) }
-        ) { inner ->
-            Box(modifier = Modifier.fillMaxSize()) {
+                FloatingActionButton(onClick = onCreateEventFromFab) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "New event")
+                }
+            }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbars) }
+    ) { inner ->
+        Box(modifier = Modifier.fillMaxSize()) {
                 if (showCreateGroup) {
                     GroupNameDialog(
                         title = "Create Group",
@@ -260,50 +258,129 @@ fun GroupsScreen(
                     )
                 }
 
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(inner),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    if (query.isBlank()) {
-                        items(items = groups, key = { it.groupId }) { summary ->
-                            GroupItem(
-                                summary = summary,
-                                selected = summary.groupId == selectedGroupId,
-                                onClick = {
-                                    if (selectedGroupId == summary.groupId) {
-                                        selectedGroupId = -1L
-                                    } else if (selectedGroupId != -1L) {
-                                        selectedGroupId = summary.groupId
-                                    } else {
-                                        onOpenGroup(summary.groupId)
-                                    }
-                                },
-                                onLongClick = { selectedGroupId = summary.groupId }
-                            )
-                        }
-
-                        if (groups.isEmpty()) {
-                            item {
-                                Text(
-                                    text = "No memory groups yet.",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(24.dp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    } else {
-                        searchContent(
-                            results = results,
-                            onOpenGroup = onOpenGroup
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(inner),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                if (query.isBlank()) {
+                    items(items = groups, key = { it.groupId }) { summary ->
+                        GroupItem(
+                            summary = summary,
+                            selected = summary.groupId == selectedGroupId,
+                            onClick = {
+                                if (selectedGroupId == summary.groupId) {
+                                    selectedGroupId = -1L
+                                } else if (selectedGroupId != -1L) {
+                                    selectedGroupId = summary.groupId
+                                } else {
+                                    onOpenGroup(summary.groupId)
+                                }
+                            },
+                            onLongClick = { selectedGroupId = summary.groupId }
                         )
                     }
+
+                    if (groups.isEmpty()) {
+                        item {
+                            Text(
+                                text = "No memory groups yet.",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(24.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                } else {
+                    searchContent(
+                        results = results,
+                        onOpenGroup = onOpenGroup
+                    )
                 }
             }
+        }
+    } 
+}
+
+@Composable
+private fun GroupHeaderAction(
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    tint: Color = MaterialTheme.colorScheme.onSurface
+) {
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.78f),
+        tonalElevation = 2.dp,
+        shadowElevation = 8.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
+    ) {
+        Box(
+            modifier = Modifier.size(36.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = tint,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchIsland(
+    query: String,
+    onQueryChange: (String) -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
+        tonalElevation = 2.dp,
+        shadowElevation = 12.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            BasicTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = { innerTextField ->
+                    if (query.isBlank()) {
+                        Text(
+                            text = "Search memories",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        )
+                    }
+                    innerTextField()
+                }
+            )
         }
     }
 }
