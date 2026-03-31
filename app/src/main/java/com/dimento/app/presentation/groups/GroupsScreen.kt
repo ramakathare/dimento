@@ -159,7 +159,7 @@ fun GroupsScreen(
                     },
                     actions = {
                         if (selectedGroup != null) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
                                 GroupHeaderAction(
                                     icon = Icons.Default.FileDownload,
                                     contentDescription = "Export group",
@@ -178,7 +178,6 @@ fun GroupsScreen(
                                 GroupHeaderAction(
                                     icon = Icons.Default.Delete,
                                     contentDescription = "Delete group",
-                                    tint = MaterialTheme.colorScheme.error,
                                     onClick = {
                                         viewModel.deleteGroup(selectedGroup.groupId)
                                         selectedGroupId = -1L
@@ -312,25 +311,16 @@ private fun GroupHeaderAction(
     onClick: () -> Unit,
     tint: Color = MaterialTheme.colorScheme.onSurface
 ) {
-    Surface(
+    IconButton(
         onClick = onClick,
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.78f),
-        tonalElevation = 2.dp,
-        shadowElevation = 8.dp,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
+        modifier = Modifier.size(36.dp)
     ) {
-        Box(
-            modifier = Modifier.size(36.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
-                tint = tint,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = tint,
+            modifier = Modifier.size(25.dp).padding(0.dp)
+        )
     }
 }
 
@@ -341,12 +331,9 @@ private fun SearchIsland(
 ) {
     Surface(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
-        tonalElevation = 2.dp,
-        shadowElevation = 12.dp,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.90f),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
     ) {
         Row(
