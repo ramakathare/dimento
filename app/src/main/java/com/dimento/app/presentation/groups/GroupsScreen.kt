@@ -77,6 +77,7 @@ import com.dimento.app.R
 import com.dimento.app.domain.model.SearchResult
 import com.dimento.app.presentation.components.GroupItem
 import com.dimento.app.presentation.theme.Surface
+import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -153,7 +154,7 @@ fun GroupsScreen(
                             IconButton(
                                 onClick = {
                                     groupName = selectedGroup.name
-                                    groupIcon = null // In real app, load current icon here
+                                    groupIcon = selectedGroup.icon
                                     showRenameGroup = true
                                 }
                             ) {
@@ -379,11 +380,21 @@ fun GroupIconView(
     size: androidx.compose.ui.unit.Dp,
     fontSize: androidx.compose.ui.unit.TextUnit = 16.sp
 ) {
+    val backgroundColor = remember(name) {
+        if (name.isBlank()) {
+            Color(0xFFE0E0E0)
+        } else {
+            val hash = name.hashCode()
+            val hue = (hash.absoluteValue % 360).toFloat()
+            Color.hsv(hue, 0.25f, 0.95f)
+        }
+    }
+
     Box(
         modifier = Modifier
             .size(size)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.secondaryContainer),
+            .background(backgroundColor),
         contentAlignment = Alignment.Center
     ) {
         if (icon != null) {
@@ -394,7 +405,7 @@ fun GroupIconView(
                     imageVector = vector,
                     contentDescription = null,
                     modifier = Modifier.size(size * 0.6f),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    tint = Color.DarkGray.copy(alpha = 0.8f)
                 )
             } else {
                 AsyncImage(
@@ -410,7 +421,7 @@ fun GroupIconView(
                 else name.split(" ")
                     .filter { it.isNotBlank() }
                     .take(2)
-                    .map { it.take(2) }
+                    .map { it.take(1) }
                     .joinToString("")
                     .uppercase()
             }
@@ -420,7 +431,7 @@ fun GroupIconView(
                     fontSize = fontSize,
                     fontWeight = FontWeight.Bold
                 ),
-                color = MaterialTheme.colorScheme.onSecondaryContainer
+                color = Color.DarkGray.copy(alpha = 0.8f)
             )
         }
     }
@@ -532,13 +543,17 @@ private fun GroupNameDialog(
                                     color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                                     shape = CircleShape
                                 )
-                                .clickable { icon = "vector:$clipart" },
+                                .clickable {
+                                    icon = if (isSelected) null else "vector:$clipart"
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = vector,
                                 contentDescription = clipart,
-                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                modifier = Modifier.size(24.dp),
+                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
