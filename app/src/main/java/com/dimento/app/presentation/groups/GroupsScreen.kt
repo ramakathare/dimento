@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Edit
@@ -206,7 +207,7 @@ fun GroupsScreen(
                     },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ) {
-                    Icon(imageVector = Icons.Default.AddCircle, contentDescription = "New group")
+                    Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = "New group")
                 }
                 FloatingActionButton(onClick = onCreateEventFromFab) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "New event")
