@@ -1,6 +1,7 @@
 package com.dimento.app.presentation.timeline
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.dimento.app.presentation.components.DateHeader
 import com.dimento.app.presentation.components.EventBubble
 import com.dimento.app.presentation.components.InputBar
+import com.dimento.app.presentation.components.ListBackground
 import com.dimento.app.presentation.model.TimelineItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,41 +110,46 @@ fun GroupTimelineScreen(
             InputBar(onSend = viewModel::addQuickEvent)
         }
     ) { inner ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(inner),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(items = items, key = { item ->
-                when (item) {
-                    is TimelineItem.Header -> "header_${item.type}"
-                    is TimelineItem.EventRow -> "event_${item.event.id}"
-                }
-            }) { item ->
-                when (item) {
-                    is TimelineItem.Header -> DateHeader(type = item.type)
-                    is TimelineItem.EventRow -> EventBubble(
-                        event = item.event,
-                        type = item.type,
-                        onMarkComplete = { viewModel.markComplete(item.event.id) },
-                        onDelete = { viewModel.delete(item.event.id) },
-                        onForward = {
-                            forwardEventId = item.event.id
-                            if (destinationGroupId <= 0) {
-                                destinationGroupId = groups.firstOrNull { it.id != groupId }?.id ?: -1L
+        Box(modifier = Modifier.fillMaxSize()) {
+            ListBackground(Modifier.fillMaxSize())
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(inner),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(items = items, key = { item ->
+                    when (item) {
+                        is TimelineItem.Header -> "header_${item.type}"
+                        is TimelineItem.EventRow -> "event_${item.event.id}"
+                    }
+                }) { item ->
+                    when (item) {
+                        is TimelineItem.Header -> DateHeader(type = item.type)
+                        is TimelineItem.EventRow -> EventBubble(
+                            event = item.event,
+                            type = item.type,
+                            onMarkComplete = { viewModel.markComplete(item.event.id) },
+                            onDelete = { viewModel.delete(item.event.id) },
+                            onForward = {
+                                forwardEventId = item.event.id
+                                if (destinationGroupId <= 0) {
+                                    destinationGroupId = groups.firstOrNull { it.id != groupId }?.id ?: -1L
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
-            }
-            if (items.isEmpty()) {
-                item {
-                    Text(
-                        text = "No memories in this group.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+
+                if (items.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No memories in this group.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }

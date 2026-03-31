@@ -76,6 +76,7 @@ import coil.compose.AsyncImage
 import com.dimento.app.R
 import com.dimento.app.domain.model.SearchResult
 import com.dimento.app.presentation.components.GroupItem
+import com.dimento.app.presentation.components.ListBackground
 import com.dimento.app.presentation.theme.Surface
 import kotlin.math.absoluteValue
 
@@ -218,26 +219,29 @@ fun GroupsScreen(
         },
         snackbarHost = { SnackbarHost(hostState = snackbars) }
     ) { inner ->
-        if (showCreateGroup) {
-            GroupNameDialog(
-                title = "Create Group",
-                actionLabel = "Create",
-                initialName = groupName,
-                initialIcon = groupIcon,
-                initialDescription = groupDescription,
-                onDismiss = {
-                    showCreateGroup = false
-                    groupDescription = null
-                },
-                onConfirm = { name, icon, description ->
-                    viewModel.createGroup(name, icon, description)
-                    showCreateGroup = false
-                    groupDescription = null
-                }
-            )
-        }
+        Box(modifier = Modifier.fillMaxSize()) {
+            ListBackground(Modifier.fillMaxSize())
 
-        if (showRenameGroup && selectedGroup != null) {
+            if (showCreateGroup) {
+                GroupNameDialog(
+                    title = "Create Group",
+                    actionLabel = "Create",
+                    initialName = groupName,
+                    initialIcon = groupIcon,
+                    initialDescription = groupDescription,
+                    onDismiss = {
+                        showCreateGroup = false
+                        groupDescription = null
+                    },
+                    onConfirm = { name, icon, description ->
+                        viewModel.createGroup(name, icon, description)
+                        showCreateGroup = false
+                        groupDescription = null
+                    }
+                )
+            }
+
+            if (showRenameGroup && selectedGroup != null) {
             GroupNameDialog(
                 title = "Edit Group",
                 actionLabel = "Save",
@@ -296,6 +300,7 @@ fun GroupsScreen(
             }
         }
     }
+}
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.searchContent(
