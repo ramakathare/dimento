@@ -82,8 +82,7 @@ fun SelectGroupScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                if (isSelected) Color(0xFFEEF7FF) else Color.Transparent,
-                                shape = CircleShape
+                                if (isSelected) Color(0xFFEEF7FF) else Color.Transparent
                             )
                             .padding(8.dp)
                             .clickable { selectedGroupId = group.id },

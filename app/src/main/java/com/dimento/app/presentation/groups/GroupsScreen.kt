@@ -183,7 +183,7 @@ fun GroupsScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 0.dp),
+                        .padding(horizontal = 8.dp, vertical = 0.dp),
                     placeholder = { Text("Search memories") },
                     singleLine = true,
                     leadingIcon = {

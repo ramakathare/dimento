@@ -2,8 +2,10 @@ package com.dimento.app.presentation.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +47,7 @@ fun GroupItem(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                if (selected) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
+                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                 else Color.Transparent
             )
             .combinedClickable(
@@ -56,11 +61,30 @@ fun GroupItem(
                 .padding(horizontal = 2.dp, vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            GroupIconView(
-                name = summary.name,
-                icon = summary.icon,
-                size = 52.dp
-            )
+            Box {
+                GroupIconView(
+                    name = summary.name,
+                    icon = summary.icon,
+                    size = 52.dp
+                )
+                if (selected) {
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .align(Alignment.BottomEnd)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            .border(1.dp, Color.White, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Selected",
+                            tint = Color.White,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+            }
             Spacer(modifier = Modifier.size(16.dp))
             Column(
                 modifier = Modifier.weight(1f),
@@ -116,7 +140,3 @@ fun GroupItem(
     }
 }
 
-@Composable
-private fun Box(modifier: Modifier) {
-    androidx.compose.foundation.layout.Box(modifier = modifier)
-}
