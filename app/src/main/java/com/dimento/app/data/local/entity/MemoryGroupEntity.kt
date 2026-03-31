@@ -8,5 +8,6 @@ data class MemoryGroupEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val icon: String? = null,
+    val description: String? = null,
     val createdAtMillis: Long
 )

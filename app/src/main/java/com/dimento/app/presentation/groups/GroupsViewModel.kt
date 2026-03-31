@@ -50,16 +50,16 @@ class GroupsViewModel(
         _query.value = newQuery
     }
 
-    fun createGroup(name: String, icon: String?) {
+    fun createGroup(name: String, icon: String?, description: String?) {
         viewModelScope.launch {
-            runCatching { createGroupUseCase(name, icon) }
+            runCatching { createGroupUseCase(name, icon, description) }
                 .onFailure { _message.value = it.message }
         }
     }
 
-    fun renameGroup(groupId: Long, name: String, icon: String?) {
+    fun renameGroup(groupId: Long, name: String, icon: String?, description: String?) {
         viewModelScope.launch {
-            runCatching { renameGroupUseCase(groupId, name, icon) }
+            runCatching { renameGroupUseCase(groupId, name, icon, description) }
                 .onFailure { _message.value = it.message }
         }
     }

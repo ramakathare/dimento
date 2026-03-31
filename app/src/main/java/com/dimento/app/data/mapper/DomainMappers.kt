@@ -11,6 +11,7 @@ fun MemoryGroupEntity.toDomain(): MemoryGroup = MemoryGroup(
     id = id,
     name = name,
     icon = icon,
+    description = description,
     createdAtMillis = createdAtMillis
 )
 
@@ -28,6 +29,7 @@ fun GroupSummaryRow.toDomain(): GroupSummary = GroupSummary(
     groupId = groupId,
     name = name,
     icon = icon,
+    description = description,
     lastMessage = lastMessage,
     lastEventDateMillis = lastEventDateMillis,
     hasFutureEvents = futureEventCount > 0

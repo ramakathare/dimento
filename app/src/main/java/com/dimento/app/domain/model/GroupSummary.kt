@@ -4,6 +4,7 @@ data class GroupSummary(
     val groupId: Long,
     val name: String,
     val icon: String? = null,
+    val description: String? = null,
     val lastMessage: String?,
     val lastEventDateMillis: Long?,
     val hasFutureEvents: Boolean

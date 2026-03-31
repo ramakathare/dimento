@@ -97,6 +97,7 @@ fun GroupsScreen(
     var showRenameGroup by remember { mutableStateOf(false) }
     var groupName by remember { mutableStateOf("") }
     var groupIcon by remember { mutableStateOf<String?>(null) }
+    var groupDescription by remember { mutableStateOf<String?>(null) }
     var selectedGroupId by remember { mutableLongStateOf(-1L) }
 
     val selectedGroup = groups.firstOrNull { it.groupId == selectedGroupId }
@@ -156,6 +157,7 @@ fun GroupsScreen(
                                 onClick = {
                                     groupName = selectedGroup.name
                                     groupIcon = selectedGroup.icon
+                                    groupDescription = selectedGroup.description
                                     showRenameGroup = true
                                 }
                             ) {
@@ -222,11 +224,12 @@ fun GroupsScreen(
                 actionLabel = "Create",
                 initialName = groupName,
                 initialIcon = groupIcon,
+                initialDescription = groupDescription,
                 onDismiss = {
                     showCreateGroup = false
                 },
-                onConfirm = { name, icon ->
-                    viewModel.createGroup(name, icon)
+                onConfirm = { name, icon, description ->
+                    viewModel.createGroup(name, icon, description)
                     showCreateGroup = false
                 }
             )
@@ -238,9 +241,10 @@ fun GroupsScreen(
                 actionLabel = "Save",
                 initialName = groupName,
                 initialIcon = groupIcon,
+                initialDescription = groupDescription,
                 onDismiss = { showRenameGroup = false },
-                onConfirm = { name, icon ->
-                    viewModel.renameGroup(selectedGroup.groupId, name, icon)
+                onConfirm = { name, icon, description ->
+                    viewModel.renameGroup(selectedGroup.groupId, name, icon, description)
                     showRenameGroup = false
                     selectedGroupId = -1L
                 }
@@ -461,11 +465,13 @@ private fun GroupNameDialog(
     actionLabel: String,
     initialName: String,
     initialIcon: String?,
+    initialDescription: String?,
     onDismiss: () -> Unit,
-    onConfirm: (String, String?) -> Unit
+    onConfirm: (String, String?, String?) -> Unit
 ) {
     var name by remember(initialName) { mutableStateOf(initialName) }
     var icon by remember(initialIcon) { mutableStateOf(initialIcon) }
+    var description by remember(initialDescription) { mutableStateOf(initialDescription ?: "") }
 
     val pickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -480,7 +486,7 @@ private fun GroupNameDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = { onConfirm(name, icon) }) {
+            TextButton(onClick = { onConfirm(name, icon, description) }) {
                 Text(actionLabel)
             }
         },
@@ -521,6 +527,29 @@ private fun GroupNameDialog(
                         focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                         unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     )
+                )
+
+                val maxDescriptionChars = 200
+
+                TextField(
+                    value = description,
+                    onValueChange = { if (it.length <= maxDescriptionChars) description = it },
+                    placeholder = { Text("Description") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 1,
+                    maxLines = 3,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    )
+                )
+                Text(
+                    text = "${description.length} / $maxDescriptionChars",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (description.length >= maxDescriptionChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.End)
                 )
 
                 Text("Pick a clipart", style = MaterialTheme.typography.labelMedium)

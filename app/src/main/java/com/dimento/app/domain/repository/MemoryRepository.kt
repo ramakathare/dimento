@@ -11,8 +11,8 @@ interface MemoryRepository {
     fun observeGroups(): Flow<List<MemoryGroup>>
     fun observeEventsByGroup(groupId: Long): Flow<List<MemoryEvent>>
     suspend fun getGroup(groupId: Long): MemoryGroup?
-    suspend fun createGroup(name: String, icon: String?): Long
-    suspend fun renameGroup(groupId: Long, name: String, icon: String?)
+    suspend fun createGroup(name: String, icon: String?, description: String?): Long
+    suspend fun renameGroup(groupId: Long, name: String, icon: String?, description: String?)
     suspend fun deleteGroup(groupId: Long)
 
     suspend fun createEvent(
