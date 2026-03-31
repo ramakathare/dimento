@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -205,6 +204,7 @@ fun GroupsScreen(
                     onClick = {
                         groupName = ""
                         groupIcon = null
+                        groupDescription = null
                         showCreateGroup = true
                     },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -227,10 +227,12 @@ fun GroupsScreen(
                 initialDescription = groupDescription,
                 onDismiss = {
                     showCreateGroup = false
+                    groupDescription = null
                 },
                 onConfirm = { name, icon, description ->
                     viewModel.createGroup(name, icon, description)
                     showCreateGroup = false
+                    groupDescription = null
                 }
             )
         }
