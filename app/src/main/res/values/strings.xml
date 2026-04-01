@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DiMento</string>
-    <string name="channel_due_today_name">Today\u2019s Memories</string>
+    <string name="app_name">DiMento</string>    <string name="splash_tagline">Record, Reflect and Reason</string>    <string name="channel_due_today_name">Today\u2019s Memories</string>
     <string name="channel_due_today_description">Reminders for memories scheduled for today</string>
 </resources>
