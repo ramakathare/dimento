@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DiMento</string>
-    <string name="search_memories_title">Search Memories</string>
-    <string name="search_memories_placeholder">Search memories...</string>
+    <string name="search_memories_title">Search Events</string>
+    <string name="search_memories_placeholder">Search events...</string>
     <string name="no_matches_found">No matches found.</string>
     <string name="splash_tagline">Record, Reflect and Reason</string>
-    <string name="channel_due_today_name">Todays Memories</string>
-    <string name="channel_due_today_description">Reminders for memories scheduled for today</string>
+    <string name="channel_due_today_name">Todays Events</string>
+    <string name="channel_due_today_description">Reminders for events scheduled for today</string>
 
     <string name="create_event_title">Create Event</string>
     <string name="select_group_title">Select Group</string>
     <string name="change_photo">Change Photo</string>
     <string name="remove">Remove</string>
     <string name="pick_a_clipart">Pick a clipart</string>
-    <string name="write_memory_placeholder">Write memory...</string>
+    <string name="write_memory_placeholder">Write event...</string>
     <string name="when_label">When?</string>
     <string name="what_label">What?</string>
     <string name="groups_label">Groups</string>
@@ -27,10 +27,10 @@
     <string name="selected">Selected</string>
     <string name="no_description">No description</string>
     <string name="group_label">Group</string>
-    <string name="no_memories_in_group">No memories in this group.</string>
+    <string name="no_memories_in_group">No events in this group.</string>
     <string name="back">Back</string>
     <string name="search">Search</string>
-    <string name="no_groups_yet">No memory groups yet.</string>
+    <string name="no_groups_yet">No event groups yet.</string>
     <string name="export_group">Export group</string>
     <string name="edit_group_action">Edit group</string>
     <string name="delete_group">Delete group</string>
@@ -41,8 +41,8 @@
     <string name="create_label">Create</string>
     <string name="save_label">Save</string>
     <string name="matched_in_group_name">Matched in group name</string>
-    <string name="memory_text_required">Memory text is required.</string>
-    <string name="memory_due_today">Memory due today</string>
+    <string name="memory_text_required">Event text is required.</string>
+    <string name="memory_due_today">Event due today</string>
     <string name="mark_complete">Mark complete</string>
     <string name="delete_label">Delete</string>
     <string name="delete_event">Delete event</string>
