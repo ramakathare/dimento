@@ -39,7 +39,7 @@ class CreateEventSharedViewModel(
     fun commit(groupId: Long, onDone: () -> Unit) {
         val snapshot = _draft.value
         if (snapshot.text.isBlank()) {
-            _message.value = "Event text is required."
+            _message.value = "Memory text is required."
             return
         }
         viewModelScope.launch {
