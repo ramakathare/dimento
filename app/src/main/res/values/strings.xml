@@ -31,4 +31,14 @@
     <string name="back">Back</string>
     <string name="search">Search</string>
     <string name="no_groups_yet">No memory groups yet.</string>
+    <string name="export_group">Export group</string>
+    <string name="edit_group_action">Edit group</string>
+    <string name="delete_group">Delete group</string>
+    <string name="new_group">New group</string>
+    <string name="new_event">New event</string>
+    <string name="create_group_title">Create Group</string>
+    <string name="edit_group_title">Edit Group</string>
+    <string name="create_label">Create</string>
+    <string name="save_label">Save</string>
+    <string name="matched_in_group_name">Matched in group name</string>
 </resources>

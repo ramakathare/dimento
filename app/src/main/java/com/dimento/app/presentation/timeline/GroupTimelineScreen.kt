@@ -22,6 +22,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -54,7 +55,7 @@ fun GroupTimelineScreen(
     var destinationGroupId by remember(groups) { mutableLongStateOf(groups.firstOrNull { it.id != groupId }?.id ?: -1L) }
 
     if (forwardEventId > 0) {
-        AlertDialog(
+            AlertDialog(
             onDismissRequest = { forwardEventId = -1L },
             confirmButton = {
                 TextButton(
@@ -63,10 +64,10 @@ fun GroupTimelineScreen(
                         viewModel.forward(forwardEventId, destinationGroupId)
                         forwardEventId = -1L
                     }
-                ) { Text("Forward") }
+                ) { Text(stringResource(id = com.dimento.app.R.string.forward)) }
             },
-            dismissButton = { TextButton(onClick = { forwardEventId = -1L }) { Text("Cancel") } },
-            title = { Text("Forward to group") },
+            dismissButton = { TextButton(onClick = { forwardEventId = -1L }) { Text(stringResource(id = com.dimento.app.R.string.cancel)) } },
+            title = { Text(stringResource(id = com.dimento.app.R.string.forward_to_group)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     groups.filter { it.id != groupId }.forEach { destination ->
@@ -89,16 +90,16 @@ fun GroupTimelineScreen(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            TopAppBar(
-                title = { Text(group?.name ?: "Group") },
+                TopAppBar(
+                title = { Text(group?.name ?: stringResource(id = com.dimento.app.R.string.group_label)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = stringResource(id = com.dimento.app.R.string.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { onSearchInGroup(groupId) }) {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                        Icon(imageVector = Icons.Default.Search, contentDescription = stringResource(id = com.dimento.app.R.string.search))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -112,7 +113,7 @@ fun GroupTimelineScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { onCreateInGroup(groupId) }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Create event")
+                Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = com.dimento.app.R.string.create_event_title))
             }
         },
         bottomBar = {
@@ -152,7 +153,7 @@ fun GroupTimelineScreen(
             if (items.isEmpty()) {
                 item {
                     Text(
-                        text = "No memories in this group.",
+                        text = stringResource(id = com.dimento.app.R.string.no_memories_in_group),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }

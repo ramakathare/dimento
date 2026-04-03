@@ -146,7 +146,7 @@ fun GroupsScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     },
-                    navigationIcon = {
+                            navigationIcon = {
                         if (hasOverlayState || query.isNotBlank()) {
                             IconButton(
                                 onClick = {
@@ -159,7 +159,7 @@ fun GroupsScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back"
+                                            contentDescription = stringResource(id = R.string.back)
                                 )
                             }
                         }
@@ -169,12 +169,12 @@ fun GroupsScreen(
                             Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
                                 GroupHeaderAction(
                                     icon = Icons.Default.FileDownload,
-                                    contentDescription = "Export group",
+                                    contentDescription = stringResource(id = R.string.export_group),
                                     onClick = { onExportGroupCsv(selectedGroup.groupId) }
                                 )
                                 GroupHeaderAction(
                                     icon = Icons.Default.Edit,
-                                    contentDescription = "Edit group",
+                                    contentDescription = stringResource(id = R.string.edit_group_action),
                                     onClick = {
                                         groupName = selectedGroup.name
                                         groupIcon = selectedGroup.icon
@@ -184,7 +184,7 @@ fun GroupsScreen(
                                 )
                                 GroupHeaderAction(
                                     icon = Icons.Default.Delete,
-                                    contentDescription = "Delete group",
+                                    contentDescription = stringResource(id = R.string.delete_group),
                                     onClick = {
                                         viewModel.deleteGroup(selectedGroup.groupId)
                                         selectedGroupId = -1L
@@ -222,10 +222,10 @@ fun GroupsScreen(
                     },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ) {
-                    Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = "New group")
+                    Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = stringResource(id = R.string.new_group))
                 }
                 FloatingActionButton(onClick = onCreateEventFromFab) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "New event")
+                    Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.new_event))
                 }
             }
         },
@@ -234,8 +234,8 @@ fun GroupsScreen(
         Box(modifier = Modifier.fillMaxSize()) {
                 if (showCreateGroup) {
                     GroupNameDialog(
-                        title = "Create Group",
-                        actionLabel = "Create",
+                        title = stringResource(id = R.string.create_group_title),
+                        actionLabel = stringResource(id = R.string.create_label),
                         initialName = groupName,
                         initialIcon = groupIcon,
                         initialDescription = groupDescription,
@@ -253,8 +253,8 @@ fun GroupsScreen(
 
                 if (showRenameGroup && selectedGroup != null) {
                     GroupNameDialog(
-                        title = "Edit Group",
-                        actionLabel = "Save",
+                        title = stringResource(id = R.string.edit_group_title),
+                        actionLabel = stringResource(id = R.string.save_label),
                         initialName = groupName,
                         initialIcon = groupIcon,
                         initialDescription = groupDescription,
@@ -295,7 +295,7 @@ fun GroupsScreen(
                     if (groups.isEmpty()) {
                         item {
                             Text(
-                                text = "No memory groups yet.",
+                                text = stringResource(id = R.string.no_groups_yet),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(24.dp),
@@ -388,12 +388,12 @@ private fun LazyListScope.searchContent(
 ) {
     if (results.groups.isNotEmpty()) {
         item("groups_header") {
-            SearchSectionHeader(text = "Groups")
+            SearchSectionHeader(text = stringResource(id = R.string.groups_label))
         }
         items(items = results.groups, key = { "group_${it.id}" }) { group ->
             SearchResultRow(
                 title = group.name,
-                subtitle = "Matched in group name",
+                subtitle = stringResource(id = R.string.matched_in_group_name),
                 onClick = { onOpenGroup(group.id) }
             )
         }
@@ -401,7 +401,7 @@ private fun LazyListScope.searchContent(
 
     if (results.matchedEvents.isNotEmpty()) {
         item("events_header") {
-            SearchSectionHeader(text = "Events")
+            SearchSectionHeader(text = stringResource(id = R.string.events_label))
         }
         items(items = results.matchedEvents, key = { "event_${it.event.id}" }) { result ->
             SearchResultRow(
@@ -415,7 +415,7 @@ private fun LazyListScope.searchContent(
     if (results.groups.isEmpty() && results.matchedEvents.isEmpty()) {
         item("empty_search") {
             Text(
-                text = "No matches found.",
+                text = stringResource(id = R.string.no_matches_found),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 24.dp),
@@ -574,7 +574,7 @@ private fun GroupNameDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(id = R.string.cancel))
             }
         },
         title = { Text(title) },
@@ -587,11 +587,11 @@ private fun GroupNameDialog(
                     GroupIconView(name = name, icon = icon, size = 64.dp, fontSize = 20.sp)
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { pickerLauncher.launch("image/*") }) {
-                            Text("Change Photo")
+                            Text(stringResource(id = R.string.change_photo))
                         }
                         if (icon != null) {
                             TextButton(onClick = { icon = null }) {
-                                Text("Remove", color = MaterialTheme.colorScheme.error)
+                                Text(stringResource(id = R.string.remove), color = MaterialTheme.colorScheme.error)
                             }
                         }
                     }
@@ -602,7 +602,7 @@ private fun GroupNameDialog(
                     TextField(
                         value = name,
                         onValueChange = { if (it.length <= maxNameChars) name = it },
-                        placeholder = { Text("Group name") },
+                        placeholder = { Text(stringResource(id = R.string.group_name_placeholder)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
@@ -625,7 +625,7 @@ private fun GroupNameDialog(
                     TextField(
                         value = description,
                         onValueChange = { if (it.length <= maxDescriptionChars) description = it },
-                        placeholder = { Text("Description") },
+                        placeholder = { Text(stringResource(id = R.string.description_placeholder)) },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 1,
                         maxLines = 3,
@@ -648,7 +648,7 @@ private fun GroupNameDialog(
                     )
                 }
 
-                Text("Pick a clipart", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(id = R.string.pick_a_clipart), style = MaterialTheme.typography.labelMedium)
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(horizontal = 4.dp)
