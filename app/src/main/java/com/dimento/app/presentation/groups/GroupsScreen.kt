@@ -13,14 +13,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.dimento.app.core.ValidationConstants
@@ -64,6 +77,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -72,6 +86,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -82,11 +97,13 @@ import com.dimento.app.core.ImageStore
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import com.dimento.app.R
 import com.dimento.app.domain.model.SearchResult
@@ -552,7 +569,237 @@ private fun getVectorIconByName(name: String): ImageVector {
 }
 
 @Composable
-private fun GroupNameDialog(
+private fun GroupFormContent(
+    name: String,
+    description: String,
+    icon: String?,
+    cliparts: List<String>,
+    onNameChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    onIconChange: (String?) -> Unit,
+    onPickImage: () -> Unit
+) {
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+        // =========================
+        // HEADER ROW
+        // =========================
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+
+            // LEFT: PHOTO
+            Box(
+                modifier = Modifier.size(88.dp), // 👈 bigger to match grid height
+                contentAlignment = Alignment.BottomEnd
+            ) {
+
+                // Main circle
+                GroupIconView(
+                    name = name,
+                    icon = icon,
+                    size = 88.dp,
+                    fontSize = 24.sp
+                )
+
+                // Edit overlay
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .clickable { onPickImage() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+            // RIGHT: SCROLLABLE CLIPARTS WITH FADE
+            val listState = rememberLazyListState()
+            val chunked = cliparts.chunked(2)
+
+            Box(
+                modifier = Modifier
+                    .height(88.dp)
+                    .weight(1f)
+            ) {
+
+                LazyRow(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(end = 24.dp)
+                ) {
+                    items(chunked) { columnItems ->
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            columnItems.forEach { clipart ->
+
+                                val vector = getVectorIconByName(clipart)
+                                val isSelected = icon == "vector:$clipart"
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                            else MaterialTheme.colorScheme.surfaceVariant
+                                        )
+                                        .border(
+                                            2.dp,
+                                            if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                            CircleShape
+                                        )
+                                        .clickable {
+                                            onIconChange(
+                                                if (isSelected) null else "vector:$clipart"
+                                            )
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = vector,
+                                        contentDescription = clipart,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = if (isSelected)
+                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                        else
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            if (columnItems.size == 1) {
+                                Spacer(modifier = Modifier.size(40.dp))
+                            }
+                        }
+                    }
+                }
+
+                // ✅ RIGHT FADE (only when scrollable)
+                val showFade by remember {
+                    derivedStateOf { listState.canScrollForward }
+                }
+
+                if (showFade) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(24.dp)
+                            .align(Alignment.CenterEnd)
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        MaterialTheme.colorScheme.surface
+                                    )
+                                )
+                            )
+                    )
+                }
+            }
+        }
+
+        val maxName = ValidationConstants.MAX_GROUP_NAME_LENGTH
+        val showNameCounter = name.length > (maxName * 0.75)
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+
+            BasicTextField(
+                value = name,
+                onValueChange = {
+                    if (it.length <= maxName) onNameChange(it)
+                },
+                singleLine = true,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(top=4.dp, bottom = 12.dp),
+                textStyle = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary), // ✅ FIX
+                decorationBox = { inner ->
+                    if (name.isEmpty()) {
+                        Text(
+                            stringResource(R.string.group_name_placeholder),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    inner()
+                }
+            )
+
+            if (showNameCounter) {
+                Text(
+                    "${name.length}/$maxName",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (name.length >= maxName)
+                        MaterialTheme.colorScheme.error
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f)
+                )
+            }
+        }
+
+        val maxDesc = ValidationConstants.MAX_GROUP_DESCRIPTION_LENGTH
+        val showDescCounter = description.length > (maxDesc * 0.75)
+
+        Box {
+
+            BasicTextField(
+                value = description,
+                onValueChange = {
+                    if (it.length <= maxDesc) onDescriptionChange(it)
+                },
+                minLines = 1,
+                maxLines = 5,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                textStyle = MaterialTheme.typography.bodyMedium.copy( // ✅ FIXED
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary), // ✅ FIX
+                decorationBox = { inner ->
+                    if (description.isEmpty()) {
+                        Text(
+                            stringResource(R.string.description_placeholder),
+                            style = MaterialTheme.typography.bodyMedium, // ✅ MATCH STYLE
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    inner()
+                }
+            )
+
+            if (showDescCounter) {
+                Text(
+                    "${description.length}/$maxDesc",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (description.length >= maxDesc)
+                        MaterialTheme.colorScheme.error
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f),
+                    modifier = Modifier.align(Alignment.BottomEnd)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GroupNameDialog(
     title: String,
     actionLabel: String,
     initialName: String,
@@ -566,11 +813,11 @@ private fun GroupNameDialog(
     var description by remember(initialDescription) { mutableStateOf(initialDescription ?: "") }
 
     val ctx = LocalContext.current
+
     val pickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            // copy selected image into app-owned images folder for persistence
             ImageStore.saveUriToAppImages(ctx, it)?.let { savedPath ->
                 icon = savedPath
             }
@@ -578,122 +825,62 @@ private fun GroupNameDialog(
     }
 
     val cliparts = listOf(
-        "work", "office", "machine", "bike", "car", "person", "group", "team", "building", "real_estate", "tools"
+        "work", "office", "machine", "bike", "car",
+        "person", "group", "team", "building", "real_estate", "tools"
     )
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = { onConfirm(name, icon, description) }) {
-                Text(actionLabel)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(id = R.string.cancel))
-            }
-        },
-        title = { Text(title) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                // Centered large preview
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                    GroupIconView(name = name, icon = icon, size = 96.dp, fontSize = 28.sp)
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 8.dp)) {
-                        TextButton(onClick = { pickerLauncher.launch("image/*") }) {
-                            Text(stringResource(id = R.string.change_photo))
-                        }
-                        if (icon != null) {
-                            TextButton(onClick = { icon = null }) {
-                                Text(stringResource(id = R.string.remove), color = MaterialTheme.colorScheme.error)
-                            }
-                        }
-                    }
-                }
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            tonalElevation = 6.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .imePadding(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
 
-                // Name field (compact)
-                val maxNameChars = ValidationConstants.MAX_GROUP_NAME_LENGTH
-                TextField(
-                    value = name,
-                    onValueChange = { if (it.length <= maxNameChars) name = it },
-                    placeholder = { Text(stringResource(id = R.string.group_name_placeholder)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    )
-                )
+                // Title
                 Text(
-                    text = "${name.length} / $maxNameChars",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (name.length >= maxNameChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium
                 )
 
-                // Description (compact)
-                val maxDescriptionChars = ValidationConstants.MAX_GROUP_DESCRIPTION_LENGTH
-                TextField(
-                    value = description,
-                    onValueChange = { if (it.length <= maxDescriptionChars) description = it },
-                    placeholder = { Text(stringResource(id = R.string.description_placeholder)) },
+                // Content
+                GroupFormContent(
+                    name = name,
+                    description = description,
+                    icon = icon,
+                    cliparts = cliparts,
+                    onNameChange = { name = it },
+                    onDescriptionChange = { description = it },
+                    onIconChange = { icon = it },
+                    onPickImage = { pickerLauncher.launch("image/*") }
+                )
+
+                // Actions
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    minLines = 1,
-                    maxLines = 3,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    )
-                )
-                Text(
-                    text = "${description.length} / $maxDescriptionChars",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (description.length >= maxDescriptionChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
-                )
-
-                // Cliparts below preview
-                Text(stringResource(id = R.string.pick_a_clipart), style = MaterialTheme.typography.labelMedium)
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(horizontal = 4.dp)
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    items(cliparts) { clipart ->
-                        val vector = getVectorIconByName(clipart)
-                        val isSelected = icon == "vector:$clipart"
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                    else MaterialTheme.colorScheme.surfaceVariant
-                                )
-                                .border(
-                                    width = 2.dp,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                    shape = CircleShape
-                                )
-                                .clickable {
-                                    icon = if (isSelected) null else "vector:$clipart"
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = vector,
-                                contentDescription = clipart,
-                                modifier = Modifier.size(24.dp),
-                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(R.string.cancel))
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    TextButton(
+                        onClick = { onConfirm(name, icon, description) },
+                        enabled = name.isNotBlank()
+                    ) {
+                        Text(actionLabel)
                     }
                 }
             }
         }
-    )
+    }
 }

@@ -114,9 +114,9 @@ fun getSubtleSurfaceColor(): Color {
  */
 fun getContrastColor(background: Color): Color {
     // luminance() is 0..1 where higher is lighter
-    return if (background.luminance() > 0.65f) {
+    return if (background.luminance() > 0.5f) {
         Color(0xFF111111)
     } else {
-        Color.DarkGray
+        Color.White
     }
 }
