@@ -136,7 +136,8 @@ fun GroupsScreen(
                         Text(
                             if (selectedGroup != null) selectedGroup.name else stringResource(R.string.app_name),
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     },
                     navigationIcon = {
@@ -461,13 +462,14 @@ fun GroupIconView(
     size: androidx.compose.ui.unit.Dp,
     fontSize: androidx.compose.ui.unit.TextUnit = 16.sp
 ) {
-    val backgroundColor = remember(name) {
+    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+    val backgroundColor = remember(name, isDarkTheme) {
         if (name.isBlank()) {
-            Color(0xFFE0E0E0)
+            if (isDarkTheme) Color(0xFF3F4945) else Color(0xFFE0E0E0)
         } else {
             val hash = name.hashCode()
             val hue = (hash.absoluteValue % 360).toFloat()
-            Color.hsv(hue, 0.25f, 0.95f)
+            Color.hsv(hue, 0.25f, if (isDarkTheme) 0.40f else 0.95f)
         }
     }
 

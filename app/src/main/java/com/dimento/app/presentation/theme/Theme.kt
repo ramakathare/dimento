@@ -1,5 +1,6 @@
 package com.dimento.app.presentation.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -19,22 +20,24 @@ private val Light = lightColorScheme(
 )
 
 private val Dark = darkColorScheme(
-    background = OnSurface,
-    surface = OnSurface,
-    onSurface = Surface,
-    onSurfaceVariant = SurfaceContainerHigh,
-    primary = PrimaryContainer,
-    onPrimary = OnSurface,
-    primaryContainer = Primary,
-    secondaryContainer = PrimaryDim,
-    tertiaryContainer = Tertiary,
-    tertiary = TertiaryContainer
+    background = DarkBackground,
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    onSurfaceVariant = DarkOnSurfaceVariant,
+    primary = DarkPrimary,
+    onPrimary = DarkOnPrimary,
+    primaryContainer = DarkPrimaryContainer,
+    secondaryContainer = DarkSecondaryContainer,
+    tertiaryContainer = DarkTertiaryContainer,
+    tertiary = DarkTertiary
 )
 
 @Composable
 fun DiMentoTheme(content: @Composable () -> Unit) {
+    val colorScheme = if (isSystemInDarkTheme()) Dark else Light
+    
     MaterialTheme(
-        colorScheme = Light,
+        colorScheme = colorScheme,
         typography = AppTypography,
         content = content
     )

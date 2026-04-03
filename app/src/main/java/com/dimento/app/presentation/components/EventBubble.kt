@@ -24,11 +24,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import com.dimento.app.domain.model.EventType
 import com.dimento.app.domain.model.MemoryEvent
-import com.dimento.app.presentation.theme.OnPrimary
-import com.dimento.app.presentation.theme.Primary
-import com.dimento.app.presentation.theme.PrimaryDim
-import com.dimento.app.presentation.theme.SurfaceContainerLow
-import com.dimento.app.presentation.theme.TertiaryContainer
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,13 +40,22 @@ fun EventBubble(
         .fillMaxWidth()
         .clip(RoundedCornerShape(24.dp))
     val formatter = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault())
+    
     val container = when (type) {
-        EventType.PAST -> Modifier.background(SurfaceContainerLow)
-        EventType.TODAY -> Modifier.background(Brush.linearGradient(listOf(Primary, PrimaryDim)))
-        EventType.FUTURE -> Modifier.background(TertiaryContainer)
+        EventType.PAST -> Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
+        EventType.TODAY -> Modifier.background(
+            Brush.linearGradient(
+                listOf(
+                    MaterialTheme.colorScheme.primary,
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
+                )
+            )
+        )
+        EventType.FUTURE -> Modifier.background(MaterialTheme.colorScheme.tertiaryContainer)
     }
+    
     val textColor = when (type) {
-        EventType.TODAY -> OnPrimary
+        EventType.TODAY -> MaterialTheme.colorScheme.onPrimary
         else -> MaterialTheme.colorScheme.onSurface
     }
     Column(

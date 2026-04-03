@@ -28,7 +28,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dimento.app.domain.model.GroupSummary
 import com.dimento.app.presentation.groups.GroupIconView
-import com.dimento.app.presentation.theme.Primary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -100,7 +99,8 @@ fun GroupItem(
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = summary.lastEventDateMillis?.let { formatter.format(Date(it)) } ?: "",
@@ -126,7 +126,7 @@ fun GroupItem(
                         Box(
                             modifier = Modifier
                                 .size(10.dp)
-                                .background(Primary, CircleShape)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape)
                         )
                     }
                 }
