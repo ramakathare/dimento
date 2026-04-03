@@ -1,5 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DiMento</string>    <string name="splash_tagline">Record, Reflect and Reason</string>    <string name="channel_due_today_name">Today\u2019s Memories</string>
+    <string name="app_name">DiMento</string>
+    <string name="search_memories_title">Search Memories</string>
+    <string name="search_memories_placeholder">Search memories...</string>
+    <string name="no_matches_found">No matches found.</string>
+    <string name="splash_tagline">Record, Reflect and Reason</string>
+    <string name="channel_due_today_name">Todays Memories</string>
     <string name="channel_due_today_description">Reminders for memories scheduled for today</string>
+
+    <string name="create_event_title">Create Event</string>
+    <string name="select_group_title">Select Group</string>
+    <string name="change_photo">Change Photo</string>
+    <string name="remove">Remove</string>
+    <string name="pick_a_clipart">Pick a clipart</string>
+    <string name="write_memory_placeholder">Write memory...</string>
+    <string name="when_label">When?</string>
+    <string name="what_label">What?</string>
+    <string name="groups_label">Groups</string>
+    <string name="events_label">Events</string>
+    <string name="cancel">Cancel</string>
+    <string name="no_events_yet">No events yet</string>
+    <string name="group_name_placeholder">Group name</string>
+    <string name="description_placeholder">Description</string>
+    <string name="forward">Forward</string>
+    <string name="forward_to_group">Forward to group</string>
+    <string name="selected">Selected</string>
+    <string name="no_description">No description</string>
+    <string name="group_label">Group</string>
+    <string name="no_memories_in_group">No memories in this group.</string>
+    <string name="back">Back</string>
+    <string name="search">Search</string>
 </resources>

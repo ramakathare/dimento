@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import kotlin.math.absoluteValue
 
 /**
  * Reusable theme utility functions for consistent dark/light theme handling
@@ -66,7 +67,17 @@ fun getBackgroundColor(): Color {
 fun getSurfaceColor(): Color {
     return MaterialTheme.colorScheme.surface
 }
-
+@Composable
+fun getGroupIconBackgroundColor(name: String): Color {
+    return if (name.isBlank()) {
+        MaterialTheme.colorScheme.surfaceVariant
+    } else {
+        // color algorithm remains but shifted into common function
+        val hash = name.hashCode()
+        val hue = (hash.absoluteValue % 360).toFloat()
+        Color.hsv(hue, 0.25f, 0.95f)
+    }
+}
 /**
  * Check if dark theme is active
  * Useful for theme-specific logic beyond color scheme

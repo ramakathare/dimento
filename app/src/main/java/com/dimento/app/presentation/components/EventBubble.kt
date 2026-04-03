@@ -24,9 +24,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import com.dimento.app.domain.model.EventType
 import com.dimento.app.domain.model.MemoryEvent
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.dimento.app.presentation.theme.getEventContainerColor
+import com.dimento.app.presentation.theme.getEventTextColor
+import com.dimento.app.core.DateFormats
 
 @Composable
 fun EventBubble(
@@ -39,32 +39,15 @@ fun EventBubble(
     val bubbleModifier = Modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(24.dp))
-    val formatter = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault())
-    
-    val container = when (type) {
-        EventType.PAST -> Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
-        EventType.TODAY -> Modifier.background(
-            Brush.linearGradient(
-                listOf(
-                    MaterialTheme.colorScheme.primary,
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
-                )
-            )
-        )
-        EventType.FUTURE -> Modifier.background(MaterialTheme.colorScheme.tertiaryContainer)
-    }
-    
-    val textColor = when (type) {
-        EventType.TODAY -> MaterialTheme.colorScheme.onPrimary
-        else -> MaterialTheme.colorScheme.onSurface
-    }
+    val container = Modifier.background(getEventContainerColor(type))
+    val textColor = getEventTextColor(type)
     Column(
         modifier = bubbleModifier.then(container).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(text = event.text, color = textColor, style = MaterialTheme.typography.bodyLarge)
         Text(
-            text = formatter.format(Date(event.eventDateMillis)),
+            text = DateFormats.eventDateTimeMillis(event.eventDateMillis),
             color = textColor.copy(alpha = 0.8f),
             style = MaterialTheme.typography.bodySmall
         )

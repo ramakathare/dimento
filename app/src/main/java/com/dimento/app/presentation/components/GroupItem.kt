@@ -28,6 +28,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dimento.app.domain.model.GroupSummary
 import com.dimento.app.presentation.groups.GroupIconView
+import com.dimento.app.core.DateFormats
+import androidx.compose.ui.res.stringResource
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -40,7 +42,7 @@ fun GroupItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit = onClick
 ) {
-    val formatter = SimpleDateFormat("dd MMM", Locale.getDefault())
+    // use centralized date format helper
 
     Column(
         modifier = Modifier
@@ -103,7 +105,7 @@ fun GroupItem(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = summary.lastEventDateMillis?.let { formatter.format(Date(it)) } ?: "",
+                        text = summary.lastEventDateMillis?.let { DateFormats.shortDateMillis(it) } ?: "",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 2.dp)
@@ -114,7 +116,7 @@ fun GroupItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = summary.lastMessage ?: "No events yet",
+                        text = summary.lastMessage ?: stringResource(id = com.dimento.app.R.string.no_events_yet),
                         modifier = Modifier.weight(1f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

@@ -23,6 +23,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.dimento.app.R
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -43,15 +45,18 @@ fun SearchScreen(
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text("Search Memories") },
+                title = { Text(stringResource(id = R.string.search_memories_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -67,7 +72,7 @@ fun SearchScreen(
                 value = query,
                 onValueChange = viewModel::onQueryChange,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search memories...") },
+                placeholder = { Text(stringResource(id = R.string.search_memories_placeholder)) },
                 singleLine = true,
                 leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search") },
                 colors = TextFieldDefaults.colors(
@@ -86,7 +91,7 @@ fun SearchScreen(
             ) {
                 if (results.groups.isNotEmpty()) {
                     item {
-                        Text("Groups", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                        Text(stringResource(id = R.string.groups_label), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                     }
                     items(items = results.groups, key = { "group_${it.id}" }) { group ->
                         androidx.compose.material3.Card(onClick = { onOpenGroup(group.id) }) {
@@ -104,7 +109,7 @@ fun SearchScreen(
 
                 if (results.matchedEvents.isNotEmpty()) {
                     item {
-                        Text("Events", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                        Text(stringResource(id = R.string.events_label), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                     }
                     items(items = results.matchedEvents, key = { "event_${it.event.id}" }) { result ->
                         androidx.compose.material3.Card(onClick = { onOpenGroup(result.event.groupId) }) {
@@ -119,7 +124,7 @@ fun SearchScreen(
                 if (query.isNotBlank() && results.groups.isEmpty() && results.matchedEvents.isEmpty()) {
                     item {
                         Text(
-                            "No matches found.",
+                            stringResource(id = R.string.no_matches_found),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

@@ -18,10 +18,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.dimento.app.core.ValidationConstants
+import com.dimento.app.presentation.theme.getGroupIconBackgroundColor
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -77,6 +80,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -188,8 +193,11 @@ fun GroupsScreen(
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor = Color.Transparent
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
 
@@ -373,7 +381,7 @@ private fun SearchIsland(
     }
 }
 
-private fun androidx.compose.foundation.lazy.LazyListScope.searchContent(
+private fun LazyListScope.searchContent(
     results: SearchResult,
     onOpenGroup: (Long) -> Unit
 ) {
@@ -459,19 +467,10 @@ private fun SearchResultRow(
 fun GroupIconView(
     name: String,
     icon: String?,
-    size: androidx.compose.ui.unit.Dp,
-    fontSize: androidx.compose.ui.unit.TextUnit = 16.sp
+    size: Dp,
+    fontSize: TextUnit = 16.sp
 ) {
-    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
-    val backgroundColor = remember(name, isDarkTheme) {
-        if (name.isBlank()) {
-            if (isDarkTheme) Color(0xFF3F4945) else Color(0xFFE0E0E0)
-        } else {
-            val hash = name.hashCode()
-            val hue = (hash.absoluteValue % 360).toFloat()
-            Color.hsv(hue, 0.25f, if (isDarkTheme) 0.40f else 0.95f)
-        }
-    }
+    val backgroundColor = getGroupIconBackgroundColor(name)
 
     Box(
         modifier = Modifier
@@ -597,7 +596,7 @@ private fun GroupNameDialog(
                     }
                 }
 
-                val maxNameChars = 100
+                val maxNameChars = ValidationConstants.MAX_GROUP_NAME_LENGTH
                 Column {
                     TextField(
                         value = name,
@@ -620,7 +619,7 @@ private fun GroupNameDialog(
                     )
                 }
 
-                val maxDescriptionChars = 200
+                val maxDescriptionChars = ValidationConstants.MAX_GROUP_DESCRIPTION_LENGTH
                 Column {
                     TextField(
                         value = description,

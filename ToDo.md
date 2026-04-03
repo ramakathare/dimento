@@ -1,0 +1,3 @@
+ - Auto a Welcome event when new group is created.
+ - When Group is edited create an event in the same group
+ - In Create Group screen, profile picture of Group should be big and in the center, cliparts should be listed below the profile picture, select clipart or change group photo both should be together. 

@@ -34,7 +34,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.dimento.app.core.ValidationConstants
+import com.dimento.app.core.DateFormats
+import com.dimento.app.R
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -52,7 +56,7 @@ fun CreateEventScreen(
     val draft by viewModel.draft.collectAsState()
     val formatter = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
     val sourceGroupId = draft.sourceGroupId
-    val maxChars = 200
+    val maxChars = ValidationConstants.MAX_EVENT_TEXT_LENGTH
 
     val openDateTimePicker = {
         val calendar = Calendar.getInstance().apply { timeInMillis = draft.eventDateMillis }
@@ -86,15 +90,18 @@ fun CreateEventScreen(
             .statusBarsPadding()
     ) {
         TopAppBar(
-            title = { Text("Create Event") },
+            title = { Text(stringResource(id = R.string.create_event_title)) },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-                scrolledContainerColor = Color.Transparent
+                containerColor = MaterialTheme.colorScheme.surface,
+                scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurface
             )
         )
 
@@ -110,9 +117,9 @@ fun CreateEventScreen(
                     .clickable { openDateTimePicker() }
             ) {
                 TextField(
-                    value = formatter.format(Date(draft.eventDateMillis)),
+                    value = DateFormats.fullDateTimeMillis(draft.eventDateMillis),
                     onValueChange = {},
-                    label = { Text("When?") },
+                    label = { Text(stringResource(id = R.string.when_label)) },
                     readOnly = true,
                     enabled = false,
                     modifier = Modifier.fillMaxWidth(),
@@ -133,7 +140,7 @@ fun CreateEventScreen(
                 TextField(
                     value = draft.text,
                     onValueChange = viewModel::updateText,
-                    label = { Text("What?") },
+                    label = { Text(stringResource(id = R.string.what_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 1,
                     maxLines = Int.MAX_VALUE,
@@ -166,8 +173,8 @@ fun CreateEventScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
-                        contentDescription = if (sourceGroupId == null) "Next" else "Send",
-                        tint = Color.White
+                        contentDescription = if (sourceGroupId == null) stringResource(id = R.string.forward) else stringResource(id = R.string.selected),
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }

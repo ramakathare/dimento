@@ -109,14 +109,10 @@ private fun DiMentoAppRoot() {
 
 @Composable
 private fun SplashScreen() {
-    val isDark = isSystemInDarkTheme()
-    val backgroundColor = if (isDark) Color(0xFF222222) else Color(0xFFDDDDDD)
-    val textColor = if (isDark) Color(0xFFE2E8E6) else Color(0xFF2D3433)
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -131,7 +127,7 @@ private fun SplashScreen() {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = stringResource(id = R.string.app_name),
-                color = textColor,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 42.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -139,7 +135,7 @@ private fun SplashScreen() {
             Spacer(modifier = Modifier.height(14.dp))
             Text(
                 text = stringResource(id = R.string.splash_tagline),
-                color = textColor.copy(alpha = 0.8f),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center

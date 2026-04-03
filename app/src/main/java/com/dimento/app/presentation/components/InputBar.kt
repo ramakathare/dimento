@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -19,9 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.dimento.app.presentation.theme.Primary
+import com.dimento.app.core.ValidationConstants
 import com.dimento.app.presentation.theme.SurfaceContainerHigh
+import com.dimento.app.R
 
 @Composable
 fun InputBar(
@@ -37,9 +40,9 @@ fun InputBar(
     ) {
         TextField(
             value = input,
-            onValueChange = { input = it.take(200) },
+            onValueChange = { input = it.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH) },
             modifier = Modifier.weight(1f),
-            placeholder = { androidx.compose.material3.Text("Write memory...") },
+            placeholder = { androidx.compose.material3.Text(stringResource(id = R.string.write_memory_placeholder)) },
             shape = RoundedCornerShape(24.dp),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = SurfaceContainerHigh,
@@ -55,9 +58,9 @@ fun InputBar(
                     input = ""
                 }
             },
-            modifier = Modifier.background(Primary, RoundedCornerShape(999.dp))
+            modifier = Modifier.background(MaterialTheme.colorScheme.primary, RoundedCornerShape(999.dp))
         ) {
-            Icon(imageVector = Icons.Default.Send, contentDescription = "Send", tint = Color.White)
+            Icon(imageVector = Icons.Default.Send, contentDescription = stringResource(id = R.string.write_memory_placeholder), tint = MaterialTheme.colorScheme.onPrimary)
         }
     }
 }

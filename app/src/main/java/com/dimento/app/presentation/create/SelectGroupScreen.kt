@@ -38,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.dimento.app.R
 import com.dimento.app.domain.usecase.ObserveGroupsUseCase
 import com.dimento.app.presentation.groups.GroupIconView
 
@@ -57,15 +59,18 @@ fun SelectGroupScreen(
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text("Select Group") },
+                title = { Text(stringResource(id = com.dimento.app.R.string.select_group_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -101,13 +106,13 @@ fun SelectGroupScreen(
                                         .size(20.dp)
                                         .align(Alignment.BottomEnd)
                                         .background(MaterialTheme.colorScheme.primary, CircleShape)
-                                        .border(1.dp, Color.White, CircleShape),
+                                        .border(1.dp, MaterialTheme.colorScheme.onPrimary, CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Check,
-                                        contentDescription = "Selected",
-                                        tint = Color.White,
+                                        contentDescription = stringResource(id = com.dimento.app.R.string.selected),
+                                        tint = MaterialTheme.colorScheme.onPrimary,
                                         modifier = Modifier.size(14.dp)
                                     )
                                 }
@@ -121,7 +126,7 @@ fun SelectGroupScreen(
                                 maxLines = 1
                             )
                             Text(
-                                text = group.description?.takeIf { it.isNotBlank() } ?: "No description",
+                                text = group.description?.takeIf { it.isNotBlank() } ?: stringResource(id = com.dimento.app.R.string.no_description),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 2

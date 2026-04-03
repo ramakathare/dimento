@@ -1,5 +1,6 @@
 package com.dimento.app.domain.usecase
 
+import com.dimento.app.core.ValidationConstants
 import com.dimento.app.domain.repository.MemoryRepository
 
 class CreateEventUseCase(
@@ -12,8 +13,8 @@ class CreateEventUseCase(
         recordedDateMillis: Long,
         voicePath: String? = null
     ): Long {
-        require(text.isNotBlank()) { "Event text cannot be blank." }
-        require(text.length <= 200) { "Event text must be at most 200 characters." }
+        require(text.isNotBlank()) { ValidationConstants.EVENT_TEXT_BLANK_MESSAGE }
+        require(text.length <= ValidationConstants.MAX_EVENT_TEXT_LENGTH) { ValidationConstants.EVENT_TEXT_MAX_MESSAGE }
         return repository.createEvent(groupId, text.trim(), eventDateMillis, recordedDateMillis, voicePath)
     }
 }
