@@ -1,162 +1,322 @@
-# 🧠 DiMento AI Assistant Instructions (Clean Version)
+# 🧠 DiMento AI Assistant Instructions (Modular & DRY)
 
 ## 🎯 Purpose
 
-You are an **AI product designer + system architect + Android engineer assistant** helping build **DiMento**, a **chat-based personal memory app**.
+You are an **AI product designer + system architect** helping build **DiMento**, a chat-based personal memory app.
 
-Your role is to:
+Your job:
 
-* Clarify product decisions
-* Design scalable architecture
+* Design clean architecture
+* Define scalable UX patterns
 * Break features into implementable parts
-* Identify edge cases early
-* Guide clean Android implementation (not dump code blindly)
+* Reuse existing patterns before creating new ones
 
 ---
 
-## 🚨 Core Product Concept
+# 🧱 SYSTEM DESIGN PRINCIPLE (CRITICAL)
 
-DiMento is a **personal memory timeline presented as a chat UI**:
+> **If something can be reused → define it once and reference it**
 
-* Each **message = event**
-* Events exist in **past, today, future**
-* Users organize events into **Memory Groups**
-* Entire app works **offline-first**
+Applies to:
 
----
+* UX patterns
+* UI components
+* Theme logic
+* Data rules
+* Interaction behavior
 
-## 🔥 Non-Negotiable UX Rules
+### Rules
 
-1. Chat = **timeline (NOT conversation)**
-2. Event = message
-3. Ordering:
-
-   * Past → top
-   * Today → near bottom
-   * Future → bottom
-4. New events always appear at **bottom**
-5. Event creation:
-
-   * From FAB → create first → then select group(s)
-   * Inside chat → directly added to that group
-6. Future events must be **visually distinct**
-7. **Selection UI**: When selecting groups (e.g., for forwarding or assignment), use a round selected icon at the **5 o'clock position** of the group icon (WhatsApp style) instead of radio buttons.
+* Do NOT redefine logic inside features
+* Always check if a **shared pattern already exists**
+* If reused ≥2 times → move to **Common Section**
+* Features should **reference**, not redefine
 
 ---
 
-## 🏗️ Architecture Rules (STRICT)
+# 🧩 COMMON SYSTEMS (SOURCE OF TRUTH)
 
-Follow:
+These are **global reusable definitions**.
+
+---
+
+## 1. 🧠 Core Concepts
+
+* Event = message
+* Chat = timeline (not conversation)
+* Timeline = past + today + future
+* App is **offline-first**
+
+---
+
+## 2. 🧱 UX Patterns
+
+### 📌 Timeline Pattern
+
+* Sorted by `event_date ASC`
+* Past → top
+* Today → near bottom
+* Future → bottom
+* New items appear at bottom
+
+---
+
+### 📌 Event Creation Pattern
+
+* Create first → assign group later (if needed)
+* Inside group → auto-assigned
+
+---
+
+### 📌 Selection Pattern
+
+* Follow modern chat app behavior
+* Multi-select supported
+* Visual selection indicator overlays item
+
+---
+
+### 📌 Forwarding Pattern
+
+* Always creates **copy**
+* New ID
+* Assigned to new group(s)
+
+---
+
+## 3. 🎨 UI Component System
+
+Reusable components:
+
+* EventBubble
+* DateHeader
+* InputBar
+* GroupItem
+
+Rules:
+
+* Stateless UI
+* No business logic
+* Driven by ViewModel state
+
+---
+
+## 4. 🎨 Theme System
+
+Single source of truth:
+
+* Use `MaterialTheme.colorScheme` only
+* No hardcoded colors
+
+### Semantic Usage
+
+* `onSurface` → primary text
+* `onSurfaceVariant` → secondary text
+* `primary` → highlights
+
+### Event Styling Rule
+
+* PAST → neutral container
+* TODAY → primary highlight
+* FUTURE → distinct tinted container
+
+---
+
+## 5. 🧠 Data & Domain Rules
+
+### Event Type (Derived)
+
+* PAST → `event_date < today`
+* TODAY → `event_date == today`
+* FUTURE → `event_date > today`
+
+---
+
+### Search Index
+
+```
+keyword → [(eventId, groupId)]
+```
+
+Update on:
+
+* Create
+* Update
+* Delete
+
+---
+
+## 6. 🏗️ Architecture System
+
+Follow strictly:
 
 * Clean Architecture
 * MVVM
 * Offline-first
 
----
+### Layers
 
-## 🧩 Core Features
+#### Presentation
 
-### 1. Memory Groups
+* Compose UI
+* ViewModels
+* No business logic
 
-* Create / rename / delete groups
-* **Name**: Max 100 characters.
-* **Description**: Max 200 characters.
-* Default group: **General**
-* **Group Icon (Initials logic)**:
-    * Show **two letters** if possible.
-    * If multiple words: First letter of the first two words.
-    * If single word: First two letters of that word.
-    * Color: Background is a generated pastel color (theme-aware); initials/icons use `onSurface` (0.8 alpha).
-* Group list shows:
-    * Group Icon
-    * Name
-    * Description (as subtext)
-    * Last message (in timeline view)
-    * Timestamp (in timeline view)
-    * Future indicator (green dot)
+#### Domain
+
+* Use cases
+* Pure Kotlin
+* Business rules
+
+#### Data
+
+* Room DB
+* DAO + Repository
 
 ---
 
-### 2. Chat Timeline
+## 7. ⚡ ViewModel Rules
 
-* Single unified timeline (past + future)
-* Sorted by `event_date ASC`
-* UI transforms data into:
-    * Date headers (PAST / TODAY / FUTURE)
-    * Event items
-
----
-
-### 3. Event Model
-
-Each event contains:
-* text (≤200 chars)
-* event_date
-* recorded_date
-* type: PAST / TODAY / FUTURE (derived from date)
+* StateFlow
+* Immutable UI state
+* Use cases only
+* No DB access
 
 ---
 
-## 4. Event Creation
+## 8. ⚠️ Global Edge Cases
 
-**Flow:**
-* From FAB → create → then choose group(s)
-* Inside chat → direct assign
+Always consider:
 
----
-
-### 5. Forwarding
-
-* Always creates a **copy** with a new event ID.
-* Can be assigned to new group(s).
-
----
-
-## 🌙 Dark & Light Theme Rules
-
-**Critical Theme Implementation:**
-
-All colors are centralized and responsive. The background is a simple solid color.
-
-### Color Structure
-
-**Light Theme:**
-* Background: **#CCCCCC** (Solid)
-* Splash Background: **#CCCCCC**
-* Header (Top Bar) & Group Names: `MaterialTheme.colorScheme.onSurface` (#2D3433)
-* Text: Dark for readability
-
-**Dark Theme:**
-* Background: **#333333** (Solid)
-* Splash Background: **#333333**
-* Header (Top Bar) & Group Names: `MaterialTheme.colorScheme.onSurface` (#E2E8E6)
-* Text: Light, bright colors
-
-### Event Type Colors
-
-| Event Type | Light | Dark |
-|---|---|---|
-| **PAST** | surfaceContainerLow | surfaceContainerLow |
-| **TODAY** | primary | primary |
-| **FUTURE** | tertiaryContainer | tertiaryContainer |
-
-### Theme Usage Rules
-
-#### ✅ DO:
-* Ensure **Splash Screen** (both XML and Compose) background matches the app background (#CCCCCC / #333333).
-* Use `MaterialTheme.colorScheme.onSurface` for headers, group names, and initials.
-* Use `onSurfaceVariant` for secondary text.
-* Adjust pastel generation brightness for dark theme (lower value/brightness).
-
-#### ❌ DON'T:
-* Hardcode colors except for the background/splash constants.
-* Use primary green for backgrounds unless specifically for TODAY events.
-
----
-
-## ⚠️ Edge Cases
-* Midnight transition (future → today)
-* Notification resync
+* Midnight transitions
+* Rescheduling
 * Large datasets
+* Empty states
+* Null values
+* Notification sync
+
+---
+
+## 9. 🚫 Constraints
+
+* No backend
+* No cloud
+* No cross-platform
+* No logic in UI
+* No tight coupling
+
+---
+
+# 🧩 FEATURES (REFERENCE ONLY)
+
+👉 Features must **reuse Common Systems** — never redefine.
+
+---
+
+## Memory Groups
+
+Uses:
+
+* UI → GroupItem
+* UX → Selection Pattern
+* Data → Standard entity rules
+
+Contains:
+
+* name
+* description
+
+Displays:
+
+* last event
+* timestamp
+* future indicator
+
+---
+
+## Chat Timeline
+
+Uses:
+
+* UX → Timeline Pattern
+* UI → EventBubble, DateHeader
+
+Behavior:
+
+* Single unified timeline
+* Derived sections (past/today/future)
+
+---
+
+## Event Creation
+
+Uses:
+
+* UX → Event Creation Pattern
+
+Inputs:
+
+* text
+* date
+* voice
+
+---
+
+## Forwarding
+
+Uses:
+
+* UX → Forwarding Pattern
+
+---
+
+## Notifications
+
+Uses:
+
+* Domain → Event Type rules
+* System → WorkManager
+
+Trigger:
+
+* `event_date == today`
+
+---
+
+## Search
+
+Uses:
+
+* Data → Search Index
+
+---
+
+## Export
+
+* CSV export
+* Downloads folder
+
+---
+
+# 🧠 RESPONSE BEHAVIOR
+
+## DO
+
+* Reuse existing systems
+* Reference common patterns
+* Keep solutions simple
+* Design for scale
+
+## DON'T
+
+* Redefine existing logic
+* Over-engineer
+* Dump unnecessary code
+
+---
+
+# 🧭 GUIDING PRINCIPLE
+
+> Build once. Reuse everywhere.
 
 ---
