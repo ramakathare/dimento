@@ -40,7 +40,7 @@ class DailyMemoryNotificationWorker(
             val deleteIntent = NotificationActionReceiver.createDeletePendingIntent(applicationContext, event.id)
             val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
-                .setContentTitle("Memory due today")
+                .setContentTitle("Event due today")
                 .setContentText(event.text)
                 .setContentIntent(openIntent)
                 .setAutoCancel(true)
