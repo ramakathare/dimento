@@ -11,12 +11,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -93,7 +96,7 @@ private fun DiMentoAppRoot() {
     var showSplash by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        delay(700)
+        delay(800)
         showSplash = false
     }
 
@@ -106,10 +109,14 @@ private fun DiMentoAppRoot() {
 
 @Composable
 private fun SplashScreen() {
+    val isDark = isSystemInDarkTheme()
+    val backgroundColor = if (isDark) Color(0xFF222222) else Color(0xFFDDDDDD)
+    val textColor = if (isDark) Color(0xFFE2E8E6) else Color(0xFF2D3433)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary),
+            .background(backgroundColor),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -119,12 +126,12 @@ private fun SplashScreen() {
             Image(
                 painter = painterResource(id = R.drawable.splash_logo),
                 contentDescription = null,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier.size(120.dp).align(Alignment.CenterHorizontally)
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = stringResource(id = R.string.app_name),
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = textColor,
                 fontSize = 42.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -132,7 +139,7 @@ private fun SplashScreen() {
             Spacer(modifier = Modifier.height(14.dp))
             Text(
                 text = stringResource(id = R.string.splash_tagline),
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = textColor.copy(alpha = 0.8f),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center
