@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import kotlin.math.absoluteValue
 
 /**
@@ -104,4 +105,18 @@ fun getFutureEventIndicatorColor(): Color {
 @Composable
 fun getSubtleSurfaceColor(): Color {
     return MaterialTheme.colorScheme.surfaceVariant
+}
+
+/**
+ * Return a high-contrast content color (dark or light) for a given background color.
+ * Uses luminance to choose a readable foreground color. This ensures initials
+ * and clipart icons remain readable when the background is a light pastel.
+ */
+fun getContrastColor(background: Color): Color {
+    // luminance() is 0..1 where higher is lighter
+    return if (background.luminance() > 0.65f) {
+        Color(0xFF111111)
+    } else {
+        Color.DarkGray
+    }
 }

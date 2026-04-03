@@ -3,7 +3,7 @@ package com.dimento.app.presentation.theme
 import androidx.compose.ui.graphics.Color
 
 // ========== LIGHT THEME ==========
-val Surface = Color(0xFFCCCCCC) // 80% white as requested
+val Surface = Color(0xFFDCDCDC) // 90% white as requested
 val OnSurface = Color(0xFF2D3433)
 val OnSurfaceVariant = Color(0xFF596060)
 val SurfaceContainerLow = Color(0xFFF1F4F3)
@@ -19,8 +19,8 @@ val SecondaryContainer = Color(0xFFD6E8CE)
 
 // ========== DARK THEME ==========
 // Background & Surface
-val DarkBackground = Color(0xFF333333)  // 80% black as requested
-val DarkSurface = Color(0xFF333333)     // Consistent solid background
+val DarkBackground = Color(0xFF212121)  // 90% black as requested
+val DarkSurface = Color(0xFF212121)     // Consistent solid background
 val DarkSurfaceVariant = Color(0xFF2A3530)  // Container variant
 val DarkSurfaceContainerLow = Color(0xFF262E2A)  // Subtle container for PAST events
 val DarkSurfaceContainerHigh = Color(0xFF3F4945)

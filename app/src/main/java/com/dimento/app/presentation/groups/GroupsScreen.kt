@@ -311,7 +311,7 @@ fun GroupsScreen(
                 }
             }
         }
-    } 
+    }
 }
 
 @Composable
@@ -472,6 +472,7 @@ fun GroupIconView(
     fontSize: TextUnit = 16.sp
 ) {
     val backgroundColor = getGroupIconBackgroundColor(name)
+    val contentColor = com.dimento.app.presentation.theme.getContrastColor(backgroundColor)
 
     Box(
         modifier = Modifier
@@ -488,7 +489,7 @@ fun GroupIconView(
                     imageVector = vector,
                     contentDescription = null,
                     modifier = Modifier.size(size * 0.6f),
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    tint = contentColor
                 )
             } else {
                 AsyncImage(
@@ -518,7 +519,7 @@ fun GroupIconView(
                     fontSize = fontSize,
                     fontWeight = FontWeight.Bold
                 ),
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                color = contentColor
             )
         }
     }
