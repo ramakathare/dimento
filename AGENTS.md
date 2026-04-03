@@ -320,3 +320,20 @@ Uses:
 > Build once. Reuse everywhere.
 
 ---
+
+## 🧰 Code Quality & Refactor Guidelines
+
+These guidelines supplement the system rules with practical, actionable refactor rules enforced across the repo:
+
+* **DRY First:** If a piece of logic appears more than once, centralize it in `presentation.theme`, `core` or `domain` depending on concern.
+* **Theme Tokens:** Use `MaterialTheme.colorScheme` exclusively in UI code; small UI ‘islands’ (search bars, chips) should use semantic helpers (e.g. `getSubtleSurfaceColor()`).
+* **No Hardcoded UI Text:** Move all user-facing strings to `res/values/strings.xml`.
+* **No Inline Colors or Numbers:** Extract colors to theme tokens; dimensions and magic numbers go to `res/values/dimens.xml` or `core/ValidationConstants`.
+* **Business Logic Placement:** Business rules belong in `domain` use-cases. ViewModels call use-cases; Composables only render state.
+* **Domain vs Utils:** If code makes business decisions, move it to domain. Pure transformations/formatters belong in `core` utilities.
+* **ViewModel Best Practices:** Use `StateFlow`, expose immutable state, no DB access, only call use-cases.
+* **Compose Practices:** Extract reusable Composables, keep them small, use stable keys in lists, and avoid heavy work in composition.
+* **Refactor Goal:** Prefer clear, minimal abstractions. Do not introduce indirection unless it reduces duplication or improves testability.
+
+Apply these rules on each PR; use code review to enforce them.
+

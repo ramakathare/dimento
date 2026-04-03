@@ -30,4 +30,5 @@
     <string name="no_memories_in_group">No memories in this group.</string>
     <string name="back">Back</string>
     <string name="search">Search</string>
+    <string name="no_groups_yet">No memory groups yet.</string>
 </resources>

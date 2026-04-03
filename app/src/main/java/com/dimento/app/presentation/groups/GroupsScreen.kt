@@ -88,6 +88,7 @@ import coil.compose.AsyncImage
 import com.dimento.app.R
 import com.dimento.app.domain.model.SearchResult
 import com.dimento.app.presentation.components.GroupItem
+import com.dimento.app.presentation.theme.getSubtleSurfaceColor
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -342,8 +343,8 @@ private fun SearchIsland(
         modifier = Modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.90f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+        color = getSubtleSurfaceColor(),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
     ) {
         Row(
             modifier = Modifier
@@ -369,7 +370,7 @@ private fun SearchIsland(
                 decorationBox = { innerTextField ->
                     if (query.isBlank()) {
                         Text(
-                            text = "Search memories",
+                            text = stringResource(id = R.string.search_memories_placeholder),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                         )

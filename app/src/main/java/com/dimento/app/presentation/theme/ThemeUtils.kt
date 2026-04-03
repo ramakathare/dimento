@@ -95,3 +95,13 @@ fun isDarkThemeActive(): Boolean {
 fun getFutureEventIndicatorColor(): Color {
     return MaterialTheme.colorScheme.tertiary
 }
+
+/**
+ * Subtle surface color for small UI 'islands' like search bars.
+ * This should be distinct from the full background but remain
+ * visually harmonious with the current theme.
+ */
+@Composable
+fun getSubtleSurfaceColor(): Color {
+    return MaterialTheme.colorScheme.surfaceVariant
+}
