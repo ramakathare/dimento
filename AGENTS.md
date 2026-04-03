@@ -37,9 +37,10 @@ DiMento is a **personal memory timeline presented as a chat UI**:
 4. New events always appear at **bottom**
 5. Event creation:
 
-   * From FAB → create first → then select group
+   * From FAB → create first → then select group(s)
    * Inside chat → directly added to that group
 6. Future events must be **visually distinct**
+7. **Selection UI**: When selecting groups (e.g., for forwarding or assignment), use a round selected icon at the **5 o'clock position** of the group icon (WhatsApp style) instead of radio buttons.
 
 ---
 
@@ -90,12 +91,15 @@ app/
 ### 1. Memory Groups
 
 * Create / rename / delete groups
+* Support for **Name** and **Description** (≤200 chars)
 * Default group: **General**
 * Group list shows:
 
+  * Group Icon
   * Name
-  * Last message
-  * Timestamp
+  * Description (as subtext)
+  * Last message (in timeline view)
+  * Timestamp (in timeline view)
   * Future indicator (green dot)
 
 ---
@@ -125,7 +129,7 @@ Each event contains:
 
 ---
 
-### 4. Event Creation
+## 4. Event Creation
 
 **Inputs:**
 
@@ -135,7 +139,7 @@ Each event contains:
 
 **Flow:**
 
-* From FAB → create → then choose group
+* From FAB → create → then choose group(s)
 * Inside chat → direct assign
 
 ---
@@ -144,7 +148,7 @@ Each event contains:
 
 * Always creates a **copy**
 * New event ID
-* Assigned to new group
+* Assigned to new group(s)
 
 ---
 
@@ -218,21 +222,23 @@ Components:
 
 **Critical Theme Implementation:**
 
-All theme colors are now **centralized and responsive** to system dark/light mode.
+All theme colors are now **centralized and responsive** to system dark/light mode. The background is a simple solid color.
 
 ### Color Structure
 
 **Light Theme (Surface = #F8FAF9, OnSurface = #2D3433):**
-* Background: Light, clean surface
+* Background: #CCCCCC (80% white) - Solid color, no bubbles/accents.
+* Header (Top Bar): Uses `MaterialTheme.colorScheme.onSurface` (Dark text: #2D3433)
+* Group Names: Uses `MaterialTheme.colorScheme.onSurface`
 * Containers: Subtle, low-contrast backgrounds
 * Text: Dark for readability
-* Accents: Full-saturation greens and yellows
 
 **Dark Theme (Background = #0D1110, Surface = #1B2420):**
-* Background: Deep dark, reduces eye strain
+* Background: #333333 (80% black) - Solid color, no bubbles/accents.
+* Header (Top Bar): Uses `MaterialTheme.colorScheme.onSurface` (Light text: #E2E8E6)
+* Group Names: Uses `MaterialTheme.colorScheme.onSurface`
 * Containers: Subtle with reduced saturation (#262E2A for PAST)
 * Text: Light, bright colors (#E2E8E6)
-* Accents: Brightened greens (#7BE58A) and muted yellows (#4A4B2B)
 
 ### Event Type Colors (Automatic Theme Switching)
 
@@ -245,30 +251,18 @@ All theme colors are now **centralized and responsive** to system dark/light mod
 ### Theme Usage Rules (DO's & DON'Ts)
 
 #### ✅ DO:
+* Use `MaterialTheme.colorScheme.onSurface` for headers and group names.
+* Use `onSurfaceVariant` for secondary text (last event text, timestamps).
+* Use `MaterialTheme.colorScheme.primary` for future event indicators.
 * Use `MaterialTheme.colorScheme.*` for all colors (automatic switching)
 * Use `ThemeUtils.kt` helper functions for consistent colors
 * Call `getEventContainerColor()`, `getEventTextColor()` for event styling
-* Use `isDarkThemeActive()` ONLY for special logic (not for colors)
 
 #### ❌ DON'T:
-* Hardcode color values (e.g., `Color(0xFFF8FAF9)`)
+* Use complex background generation logic (300+ lines of bubble/gradient logic removed).
+* Hardcode color values unless specifically required for the solid background values.
 * Use color constants directly (use MaterialTheme instead)
 * Mix light theme colors in dark theme components
-* Create theme-specific branching in UI layers (let MaterialTheme handle it)
-
-### Reusable Theme Functions
-
-Located in `presentation/theme/ThemeUtils.kt`:
-
-```kotlin
-getEventContainerColor(eventType)   // Container bg for PAST/TODAY/FUTURE
-getEventTextColor(eventType)        // Text color for events (with contrast)
-getMutedTextColor()                 // Secondary text (timestamps, labels)
-getBackgroundColor()                // Full-screen background
-getSurfaceColor()                   // Card/container surfaces
-getFutureEventIndicatorColor()      // Future event visual distinction
-isDarkThemeActive()                 // Check theme (rare - for logic only)
-```
 
 ### Component Integration
 
@@ -280,13 +274,12 @@ isDarkThemeActive()                 // Check theme (rare - for logic only)
 
 **Background & Containers:**
 * Always use `MaterialTheme.colorScheme.background`
-* Bubble colors in `AppBackground.kt` auto-select palette per theme
+* Simplified to solid colors per theme.
 
 ### Debugging Theme Issues
 
 * Check if component uses `MaterialTheme.colorScheme.*` → if not, file is broken
 * If text is hard to read in dark → ensure using `onSurface`, not `surface`
-* If bubbles not subtle → verify `surfaceContainerLow` is being used, not container
 * Test in both light + dark system themes (Settings → Display)
 
 ---
@@ -365,5 +358,6 @@ From your original file :
 * Unified product + engineering instructions
 * Eliminated repeated explanations of same concepts
 * Converted into **actionable AI instructions instead of documentation**
+* **Updated for solid background theme, group descriptions, and WhatsApp-style selection.**
 
 ---
