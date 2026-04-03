@@ -26,6 +26,7 @@ import com.dimento.app.domain.usecase.UpdateEventUseCase
 import com.dimento.app.domain.util.EventTypeResolver
 
 class AppContainer(context: Context) {
+    val appContext: Context = context
     private val database: DiMentoDatabase = Room.databaseBuilder(
         context,
         DiMentoDatabase::class.java,

@@ -3,6 +3,8 @@ package com.dimento.app.presentation.create
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dimento.app.domain.usecase.CreateEventUseCase
+import com.dimento.app.core.ServiceLocator
+import com.dimento.app.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,7 +41,8 @@ class CreateEventSharedViewModel(
     fun commit(groupId: Long, onDone: () -> Unit) {
         val snapshot = _draft.value
         if (snapshot.text.isBlank()) {
-            _message.value = "Memory text is required."
+            val ctx = ServiceLocator.container.appContext
+            _message.value = ctx.getString(R.string.memory_text_required)
             return
         }
         viewModelScope.launch {

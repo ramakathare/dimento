@@ -41,4 +41,12 @@
     <string name="create_label">Create</string>
     <string name="save_label">Save</string>
     <string name="matched_in_group_name">Matched in group name</string>
+    <string name="memory_text_required">Memory text is required.</string>
+    <string name="memory_due_today">Memory due today</string>
+    <string name="mark_complete">Mark complete</string>
+    <string name="delete_label">Delete</string>
+    <string name="delete_event">Delete event</string>
+    <string name="forward_event">Forward event</string>
+    <string name="export_failed">Export failed.</string>
+    <string name="export_success">Group CSV exported to Downloads</string>
 </resources>

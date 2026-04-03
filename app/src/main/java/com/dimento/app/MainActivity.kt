@@ -191,12 +191,12 @@ private fun DiMentoAppContent() {
                                     nowMillis = System.currentTimeMillis()
                                 )
                                 checkNotNull(CsvExporter(context).export(export.fileName, export.content)) {
-                                    "Export failed."
+                                    context.getString(R.string.export_failed)
                                 }
                             }.onSuccess {
-                                Toast.makeText(context, "Group CSV exported to Downloads", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.export_success), Toast.LENGTH_SHORT).show()
                             }.onFailure {
-                                Toast.makeText(context, it.message ?: "Export failed", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, it.message ?: context.getString(R.string.export_failed), Toast.LENGTH_SHORT).show()
                             }
                         }
                     }

@@ -17,6 +17,8 @@ import androidx.compose.material.icons.filled.Forward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.dimento.app.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,21 +56,21 @@ fun EventBubble(
         Row {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Mark complete",
+                contentDescription = stringResource(id = R.string.mark_complete),
                 tint = textColor,
                 modifier = Modifier.clickable(onClick = onMarkComplete)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Icon(
                 imageVector = Icons.Default.Delete,
-                contentDescription = "Delete event",
+                contentDescription = stringResource(id = R.string.delete_event),
                 tint = textColor,
                 modifier = Modifier.clickable(onClick = onDelete)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Icon(
                 imageVector = Icons.Default.Forward,
-                contentDescription = "Forward event",
+                contentDescription = stringResource(id = R.string.forward_event),
                 tint = textColor,
                 modifier = Modifier.clickable(onClick = onForward)
             )
