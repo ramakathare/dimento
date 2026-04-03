@@ -52,38 +52,6 @@ Follow:
 * MVVM
 * Offline-first
 
-### Layer Responsibilities
-
-#### Presentation
-
-* Jetpack Compose UI
-* ViewModels
-* NO business logic
-
-#### Domain
-
-* Use cases ONLY
-* Pure Kotlin (no Android deps)
-* All business rules live here
-
-#### Data
-
-* Room DB
-* DAO + Repository implementations
-
----
-
-## 📦 Project Structure
-
-```
-app/
-├── data/
-├── domain/
-├── presentation/
-├── notifications/
-└── core/
-```
-
 ---
 
 ## 🧩 Core Features
@@ -91,16 +59,21 @@ app/
 ### 1. Memory Groups
 
 * Create / rename / delete groups
-* Support for **Name** and **Description** (≤200 chars)
+* **Name**: Max 100 characters.
+* **Description**: Max 200 characters.
 * Default group: **General**
+* **Group Icon (Initials logic)**:
+    * Show **two letters** if possible.
+    * If multiple words: First letter of the first two words.
+    * If single word: First two letters of that word.
+    * Color: Background is a generated pastel color (theme-aware); initials/icons use `onSurface` (0.8 alpha).
 * Group list shows:
-
-  * Group Icon
-  * Name
-  * Description (as subtext)
-  * Last message (in timeline view)
-  * Timestamp (in timeline view)
-  * Future indicator (green dot)
+    * Group Icon
+    * Name
+    * Description (as subtext)
+    * Last message (in timeline view)
+    * Timestamp (in timeline view)
+    * Future indicator (green dot)
 
 ---
 
@@ -109,36 +82,24 @@ app/
 * Single unified timeline (past + future)
 * Sorted by `event_date ASC`
 * UI transforms data into:
-
-  * Date headers (PAST / TODAY / FUTURE)
-  * Event items
+    * Date headers (PAST / TODAY / FUTURE)
+    * Event items
 
 ---
 
 ### 3. Event Model
 
 Each event contains:
-
 * text (≤200 chars)
 * event_date
 * recorded_date
-* completed_date (nullable)
-* type: PAST / TODAY / FUTURE
-
-👉 Type is **derived from date (not manually set)**
+* type: PAST / TODAY / FUTURE (derived from date)
 
 ---
 
 ## 4. Event Creation
 
-**Inputs:**
-
-* Text
-* Date
-* Voice (optional)
-
 **Flow:**
-
 * From FAB → create → then choose group(s)
 * Inside chat → direct assign
 
@@ -146,75 +107,8 @@ Each event contains:
 
 ### 5. Forwarding
 
-* Always creates a **copy**
-* New event ID
-* Assigned to new group(s)
-
----
-
-### 6. Notifications
-
-Use **WorkManager**
-
-Trigger when:
-
-* `event_date == today`
-
-Actions:
-
-* Mark complete
-* Delete
-
----
-
-### 7. Search
-
-* Global + group-specific
-* Use **reverse index**
-
-Structure:
-
-```
-keyword → [(eventId, groupId)]
-```
-
-Update index on:
-
-* Create
-* Update
-* Delete
-
----
-
-### 8. CSV Export
-
-Export all event fields to:
-
-* Downloads folder
-
----
-
-## ⚡ ViewModel Rules
-
-* Use StateFlow
-* Expose immutable UI state
-* Only call use cases
-* No direct DB access
-
----
-
-## 🎨 UI Rules (Compose)
-
-* Use LazyColumn (chat)
-* Stable keys required
-* Avoid recomposition issues
-
-Components:
-
-* EventBubble
-* DateHeader
-* InputBar
-* GroupItem
+* Always creates a **copy** with a new event ID.
+* Can be assigned to new group(s).
 
 ---
 
@@ -222,142 +116,47 @@ Components:
 
 **Critical Theme Implementation:**
 
-All theme colors are now **centralized and responsive** to system dark/light mode. The background is a simple solid color.
+All colors are centralized and responsive. The background is a simple solid color.
 
 ### Color Structure
 
-**Light Theme (Surface = #F8FAF9, OnSurface = #2D3433):**
-* Background: #CCCCCC (80% white) - Solid color, no bubbles/accents.
-* Header (Top Bar): Uses `MaterialTheme.colorScheme.onSurface` (Dark text: #2D3433)
-* Group Names: Uses `MaterialTheme.colorScheme.onSurface`
-* Containers: Subtle, low-contrast backgrounds
+**Light Theme:**
+* Background: **#CCCCCC** (Solid)
+* Splash Background: **#CCCCCC**
+* Header (Top Bar) & Group Names: `MaterialTheme.colorScheme.onSurface` (#2D3433)
 * Text: Dark for readability
 
-**Dark Theme (Background = #0D1110, Surface = #1B2420):**
-* Background: #333333 (80% black) - Solid color, no bubbles/accents.
-* Header (Top Bar): Uses `MaterialTheme.colorScheme.onSurface` (Light text: #E2E8E6)
-* Group Names: Uses `MaterialTheme.colorScheme.onSurface`
-* Containers: Subtle with reduced saturation (#262E2A for PAST)
-* Text: Light, bright colors (#E2E8E6)
+**Dark Theme:**
+* Background: **#333333** (Solid)
+* Splash Background: **#333333**
+* Header (Top Bar) & Group Names: `MaterialTheme.colorScheme.onSurface` (#E2E8E6)
+* Text: Light, bright colors
 
-### Event Type Colors (Automatic Theme Switching)
+### Event Type Colors
 
 | Event Type | Light | Dark |
 |---|---|---|
-| **PAST** | surfaceContainerLow (subtle gray) | surfaceContainerLow (dark gray) |
-| **TODAY** | primary gradient (bright green) | primary gradient (bright green) |
-| **FUTURE** | tertiaryContainer (pale yellow) | tertiaryContainer (muted olive) |
+| **PAST** | surfaceContainerLow | surfaceContainerLow |
+| **TODAY** | primary | primary |
+| **FUTURE** | tertiaryContainer | tertiaryContainer |
 
-### Theme Usage Rules (DO's & DON'Ts)
+### Theme Usage Rules
 
 #### ✅ DO:
-* Use `MaterialTheme.colorScheme.onSurface` for headers and group names.
-* Use `onSurfaceVariant` for secondary text (last event text, timestamps).
-* Use `MaterialTheme.colorScheme.primary` for future event indicators.
-* Use `MaterialTheme.colorScheme.*` for all colors (automatic switching)
-* Use `ThemeUtils.kt` helper functions for consistent colors
-* Call `getEventContainerColor()`, `getEventTextColor()` for event styling
+* Ensure **Splash Screen** (both XML and Compose) background matches the app background (#CCCCCC / #333333).
+* Use `MaterialTheme.colorScheme.onSurface` for headers, group names, and initials.
+* Use `onSurfaceVariant` for secondary text.
+* Adjust pastel generation brightness for dark theme (lower value/brightness).
 
 #### ❌ DON'T:
-* Use complex background generation logic (300+ lines of bubble/gradient logic removed).
-* Hardcode color values unless specifically required for the solid background values.
-* Use color constants directly (use MaterialTheme instead)
-* Mix light theme colors in dark theme components
-
-### Component Integration
-
-**EventBubble:**
-* Container: `MaterialTheme.colorScheme.surfaceContainerLow` (PAST)
-* TODAY gradient uses `colorScheme.primary` (auto-brightens in dark)
-* FUTURE uses `colorScheme.tertiaryContainer` (auto-muted in dark)
-* Text color: `getEventTextColor(type)` ensures contrast
-
-**Background & Containers:**
-* Always use `MaterialTheme.colorScheme.background`
-* Simplified to solid colors per theme.
-
-### Debugging Theme Issues
-
-* Check if component uses `MaterialTheme.colorScheme.*` → if not, file is broken
-* If text is hard to read in dark → ensure using `onSurface`, not `surface`
-* Test in both light + dark system themes (Settings → Display)
+* Hardcode colors except for the background/splash constants.
+* Use primary green for backgrounds unless specifically for TODAY events.
 
 ---
 
-## ⚠️ Edge Cases (ALWAYS consider)
-
+## ⚠️ Edge Cases
 * Midnight transition (future → today)
-* Event rescheduling
-* Large datasets (1000+ events)
-* Empty states
-* Null values
 * Notification resync
-
----
-
-## 🚫 Hard Constraints
-
-* ❌ No backend / server
-* ❌ No cloud sync
-* ❌ No Flutter / cross-platform
-* ❌ No business logic in UI
-* ❌ No tight coupling
-
----
-
-## 🧠 How You Should Respond
-
-When helping me:
-
-### DO:
-
-* Break features into **steps + layers**
-* Suggest **data flow + architecture**
-* Highlight **edge cases**
-* Keep solutions **simple and scalable**
-
-### DON'T:
-
-* Dump full code unless asked
-* Over-engineer
-* Add unnecessary abstractions
-
----
-
-## 🧩 When Code is Requested
-
-* Use:
-
-  * Room
-  * WorkManager
-  * Jetpack Compose
-* Keep it:
-
-  * Modular
-  * Testable
-  * Production-ready
-
----
-
-## 🧭 Guiding Principle
-
-If unsure:
-
-* Choose **simplicity**
-* Keep logic in **domain**
-* Keep UI **dumb**
-
----
-
-## ✅ What Changed (Redundancy Removed)
-
-From your original file :
-
-* Removed repeated architecture rules
-* Merged duplicate “DO NOT” sections
-* Unified product + engineering instructions
-* Eliminated repeated explanations of same concepts
-* Converted into **actionable AI instructions instead of documentation**
-* **Updated for solid background theme, group descriptions, and WhatsApp-style selection.**
+* Large datasets
 
 ---
