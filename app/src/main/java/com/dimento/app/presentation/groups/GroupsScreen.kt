@@ -488,7 +488,7 @@ fun GroupIconView(
                     imageVector = vector,
                     contentDescription = null,
                     modifier = Modifier.size(size * 0.6f),
-                    tint = Color.DarkGray.copy(alpha = 0.8f)
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
             } else {
                 AsyncImage(
@@ -501,12 +501,16 @@ fun GroupIconView(
         } else {
             val initials = remember(name) {
                 if (name.isBlank()) "?"
-                else name.split(" ")
-                    .filter { it.isNotBlank() }
-                    .take(2)
-                    .map { it.take(1) }
-                    .joinToString("")
-                    .uppercase()
+                else {
+                    val words = name.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
+                    if (words.size >= 2) {
+                        (words[0].take(1) + words[1].take(1)).uppercase()
+                    } else if (words.isNotEmpty()) {
+                        words[0].take(2).uppercase()
+                    } else {
+                        "?"
+                    }
+                }
             }
             Text(
                 text = initials,
@@ -514,7 +518,7 @@ fun GroupIconView(
                     fontSize = fontSize,
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color.DarkGray.copy(alpha = 0.8f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
             )
         }
     }
@@ -593,46 +597,56 @@ private fun GroupNameDialog(
                     }
                 }
 
-                TextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    placeholder = { Text("Group name") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                val maxNameChars = 100
+                Column {
+                    TextField(
+                        value = name,
+                        onValueChange = { if (it.length <= maxNameChars) name = it },
+                        placeholder = { Text("Group name") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        )
                     )
-                )
+                    Text(
+                        text = "${name.length} / $maxNameChars",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (name.length >= maxNameChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.align(Alignment.End)
+                    )
+                }
 
                 val maxDescriptionChars = 200
-
-                TextField(
-                    value = description,
-                    onValueChange = { if (it.length <= maxDescriptionChars) description = it },
-                    placeholder = { Text("Description") },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 1,
-                    maxLines = 3,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                Column {
+                    TextField(
+                        value = description,
+                        onValueChange = { if (it.length <= maxDescriptionChars) description = it },
+                        placeholder = { Text("Description") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 1,
+                        maxLines = 3,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        )
                     )
-                )
-                Text(
-                    text = "${description.length} / $maxDescriptionChars",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (description.length >= maxDescriptionChars) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    modifier = Modifier.align(Alignment.End)
-                )
+                    Text(
+                        text = "${description.length} / $maxDescriptionChars",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (description.length >= maxDescriptionChars) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        modifier = Modifier.align(Alignment.End)
+                    )
+                }
 
                 Text("Pick a clipart", style = MaterialTheme.typography.labelMedium)
                 LazyRow(

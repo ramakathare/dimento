@@ -13,10 +13,10 @@ fun AppBackground(modifier: Modifier = Modifier) {
     val isDark = isSystemInDarkTheme()
     val backgroundColor = if (isDark) {
         // Dark theme: 80% black (dark gray)
-        Color(0xFF333333)
+        Color(0xFF222222)
     } else {
         // Light theme: 80% white (light gray)
-        Color(0xFFCCCCCC)
+        Color(0xFFDDDDDD)
     }
 
     Box(
