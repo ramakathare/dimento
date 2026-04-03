@@ -76,6 +76,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import java.io.File
+import com.dimento.app.core.ImageStore
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -492,8 +495,14 @@ fun GroupIconView(
                     tint = contentColor
                 )
             } else {
+                // Support app-stored absolute file paths and content URIs saved as file paths
+                val model = when {
+                    icon.startsWith("/") -> File(icon)
+                    icon.startsWith("file://") -> File(icon.removePrefix("file://"))
+                    else -> icon
+                }
                 AsyncImage(
-                    model = icon,
+                    model = model,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -556,10 +565,16 @@ private fun GroupNameDialog(
     var icon by remember(initialIcon) { mutableStateOf(initialIcon) }
     var description by remember(initialDescription) { mutableStateOf(initialDescription ?: "") }
 
+    val ctx = LocalContext.current
     val pickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { icon = it.toString() }
+        uri?.let {
+            // copy selected image into app-owned images folder for persistence
+            ImageStore.saveUriToAppImages(ctx, it)?.let { savedPath ->
+                icon = savedPath
+            }
+        }
     }
 
     val cliparts = listOf(
@@ -580,13 +595,11 @@ private fun GroupNameDialog(
         },
         title = { Text(title) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    GroupIconView(name = name, icon = icon, size = 64.dp, fontSize = 20.sp)
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Centered large preview
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    GroupIconView(name = name, icon = icon, size = 96.dp, fontSize = 28.sp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 8.dp)) {
                         TextButton(onClick = { pickerLauncher.launch("image/*") }) {
                             Text(stringResource(id = R.string.change_photo))
                         }
@@ -598,57 +611,52 @@ private fun GroupNameDialog(
                     }
                 }
 
+                // Name field (compact)
                 val maxNameChars = ValidationConstants.MAX_GROUP_NAME_LENGTH
-                Column {
-                    TextField(
-                        value = name,
-                        onValueChange = { if (it.length <= maxNameChars) name = it },
-                        placeholder = { Text(stringResource(id = R.string.group_name_placeholder)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        )
+                TextField(
+                    value = name,
+                    onValueChange = { if (it.length <= maxNameChars) name = it },
+                    placeholder = { Text(stringResource(id = R.string.group_name_placeholder)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     )
-                    Text(
-                        text = "${name.length} / $maxNameChars",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (name.length >= maxNameChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.align(Alignment.End)
-                    )
-                }
+                )
+                Text(
+                    text = "${name.length} / $maxNameChars",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (name.length >= maxNameChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                )
 
+                // Description (compact)
                 val maxDescriptionChars = ValidationConstants.MAX_GROUP_DESCRIPTION_LENGTH
-                Column {
-                    TextField(
-                        value = description,
-                        onValueChange = { if (it.length <= maxDescriptionChars) description = it },
-                        placeholder = { Text(stringResource(id = R.string.description_placeholder)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 1,
-                        maxLines = 3,
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        )
+                TextField(
+                    value = description,
+                    onValueChange = { if (it.length <= maxDescriptionChars) description = it },
+                    placeholder = { Text(stringResource(id = R.string.description_placeholder)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 1,
+                    maxLines = 3,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     )
-                    Text(
-                        text = "${description.length} / $maxDescriptionChars",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (description.length >= maxDescriptionChars) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        },
-                        modifier = Modifier.align(Alignment.End)
-                    )
-                }
+                )
+                Text(
+                    text = "${description.length} / $maxDescriptionChars",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (description.length >= maxDescriptionChars) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                )
 
+                // Cliparts below preview
                 Text(stringResource(id = R.string.pick_a_clipart), style = MaterialTheme.typography.labelMedium)
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
