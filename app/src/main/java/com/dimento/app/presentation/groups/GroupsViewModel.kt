@@ -9,6 +9,8 @@ import com.dimento.app.domain.usecase.DeleteGroupUseCase
 import com.dimento.app.domain.usecase.ObserveGroupSummariesUseCase
 import com.dimento.app.domain.usecase.RenameGroupUseCase
 import com.dimento.app.domain.usecase.SearchMemoriesUseCase
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +30,16 @@ class GroupsViewModel(
     private val searchMemoriesUseCase: SearchMemoriesUseCase
 ) : ViewModel() {
 
+    private val _pendingDeletions = MutableStateFlow<Set<Long>>(emptySet())
+    private var undoJob: Job? = null
+
+    private val _selectedGroupIds = MutableStateFlow<Set<Long>>(emptySet())
+    val selectedGroupIds: StateFlow<Set<Long>> = _selectedGroupIds.asStateFlow()
+
     val groups: StateFlow<List<GroupSummary>> = observeGroupSummariesUseCase()
+        .combine(_pendingDeletions) { list, pending ->
+            list.filter { it.groupId !in pending }
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _query = MutableStateFlow("")
@@ -50,6 +61,23 @@ class GroupsViewModel(
         _query.value = newQuery
     }
 
+    fun toggleSelection(groupId: Long) {
+        val current = _selectedGroupIds.value
+        _selectedGroupIds.value = if (groupId in current) {
+            current - groupId
+        } else {
+            current + groupId
+        }
+    }
+
+    fun clearSelection() {
+        _selectedGroupIds.value = emptySet()
+    }
+
+    fun enterSelectionMode(groupId: Long) {
+        _selectedGroupIds.value = setOf(groupId)
+    }
+
     fun createGroup(name: String, icon: String?, description: String?) {
         viewModelScope.launch {
             runCatching { createGroupUseCase(name, icon, description) }
@@ -64,14 +92,49 @@ class GroupsViewModel(
         }
     }
 
-    fun deleteGroup(groupId: Long) {
-        viewModelScope.launch {
-            runCatching { deleteGroupUseCase(groupId) }
-                .onFailure { _message.value = it.message }
+    fun deleteSelectedGroups() {
+        val idsToDelete = _selectedGroupIds.value
+        if (idsToDelete.isEmpty()) return
+        
+        clearSelection()
+        
+        undoJob?.cancel()
+        commitPendingDeletions()
+
+        _pendingDeletions.value = idsToDelete
+        _message.value = if (idsToDelete.size == 1) "Group deleted" else "${idsToDelete.size} groups deleted"
+
+        undoJob = viewModelScope.launch {
+            delay(5000)
+            commitPendingDeletions()
         }
+    }
+
+    private fun commitPendingDeletions() {
+        val idsToDelete = _pendingDeletions.value
+        if (idsToDelete.isNotEmpty()) {
+            val snapshot = idsToDelete.toSet()
+            _pendingDeletions.value = emptySet()
+            viewModelScope.launch {
+                snapshot.forEach { id ->
+                    runCatching { deleteGroupUseCase(id) }
+                }
+            }
+        }
+    }
+
+    fun undoDelete() {
+        undoJob?.cancel()
+        _pendingDeletions.value = emptySet()
+        _message.value = null
     }
 
     fun consumeMessage() {
         _message.value = null
+    }
+
+    override fun onCleared() {
+        commitPendingDeletions()
+        super.onCleared()
     }
 }

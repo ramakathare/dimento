@@ -5,7 +5,7 @@
     <string name="search_memories_placeholder">Search events...</string>
     <string name="no_matches_found">No matches found.</string>
     <string name="splash_tagline">Record, Reflect and Reason</string>
-    <string name="channel_due_today_name">Todays Events</string>
+    <string name="channel_due_today_name">Today\'s Events</string>
     <string name="channel_due_today_description">Reminders for events scheduled for today</string>
 
     <string name="create_event_title">Create Event</string>
@@ -24,7 +24,8 @@
     <string name="description_placeholder">Description</string>
     <string name="forward">Forward</string>
     <string name="forward_to_group">Forward to group</string>
-    <string name="selected">Selected</string>
+    <string name="common_selected">Selected</string>
+    <string name="selected_count">%1$d selected</string>
     <string name="no_description">No description</string>
     <string name="group_label">Group</string>
     <string name="no_memories_in_group">No events in this group.</string>
@@ -49,4 +50,7 @@
     <string name="forward_event">Forward event</string>
     <string name="export_failed">Export failed.</string>
     <string name="export_success">Group CSV exported to Downloads</string>
+    <string name="undo">Undo</string>
+    <string name="groups_deleted">%1$d groups deleted</string>
+    <string name="group_deleted">Group deleted</string>
 </resources>

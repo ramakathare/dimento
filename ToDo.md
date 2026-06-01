@@ -1,2 +1,3 @@
  - Auto a Welcome event when new group is created.
  - When Group is edited create an event in the same group
+ - After deleting group, we see undo. After undo timedout we are seeing the deleted group for split second.

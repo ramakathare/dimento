@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,9 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.dimento.app.core.ValidationConstants
 import com.dimento.app.core.DateFormats
 import com.dimento.app.R
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,7 +52,6 @@ fun CreateEventScreen(
 ) {
     val context = LocalContext.current
     val draft by viewModel.draft.collectAsState()
-    val formatter = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
     val sourceGroupId = draft.sourceGroupId
     val maxChars = ValidationConstants.MAX_EVENT_TEXT_LENGTH
 
@@ -93,7 +90,7 @@ fun CreateEventScreen(
             title = { Text(stringResource(id = R.string.create_event_title)) },
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -173,7 +170,7 @@ fun CreateEventScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
-                        contentDescription = if (sourceGroupId == null) stringResource(id = R.string.forward) else stringResource(id = R.string.selected),
+                        contentDescription = if (sourceGroupId == null) stringResource(id = R.string.forward) else stringResource(id = R.string.common_selected),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }

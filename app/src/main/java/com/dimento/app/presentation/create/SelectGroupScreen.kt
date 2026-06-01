@@ -59,7 +59,7 @@ fun SelectGroupScreen(
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(id = com.dimento.app.R.string.select_group_title)) },
+                title = { Text(stringResource(id = R.string.select_group_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
@@ -111,7 +111,7 @@ fun SelectGroupScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Check,
-                                        contentDescription = stringResource(id = com.dimento.app.R.string.selected),
+                                        contentDescription = stringResource(id = R.string.common_selected),
                                         tint = MaterialTheme.colorScheme.onPrimary,
                                         modifier = Modifier.size(14.dp)
                                     )
@@ -126,7 +126,7 @@ fun SelectGroupScreen(
                                 maxLines = 1
                             )
                             Text(
-                                text = group.description?.takeIf { it.isNotBlank() } ?: stringResource(id = com.dimento.app.R.string.no_description),
+                                text = group.description?.takeIf { it.isNotBlank() } ?: stringResource(id = R.string.no_description),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 2
