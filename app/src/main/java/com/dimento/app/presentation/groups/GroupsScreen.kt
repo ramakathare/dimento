@@ -723,7 +723,7 @@ private fun GroupFormContent(
                 singleLine = true,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(top=4.dp, bottom = 12.dp),
+                    .padding(top=8.dp, bottom = 12.dp),
                 textStyle = MaterialTheme.typography.titleMedium.copy(
                     color = MaterialTheme.colorScheme.onSurface
                 ),

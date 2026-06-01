@@ -72,9 +72,10 @@ dependencies {
     // Added Material Components dependency for Material 3 themes
     implementation("com.google.android.material:material:1.13.0")
 
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    val room_version = "2.7.0-alpha11"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
 
     implementation("androidx.work:work-runtime-ktx:2.10.0")
 
