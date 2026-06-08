@@ -1,5 +1,6 @@
 package com.dimento.app.presentation.components
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -7,10 +8,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -56,29 +62,29 @@ fun EventComposerBar(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
-                focusRequester.requestFocus()
-            },
-        shape = MaterialTheme.shapes.large,
+            .animateContentSize(), // Smoothly animates height changes when text grows or keyboard lifts
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp
+        tonalElevation = 6.dp,
+        shadowElevation = 8.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                // Use safeDrawing to handle both system navigation bar and keyboard (IME) lifting.
+                // This ensures the background (Surface) bleeds to the screen edge while
+                // interactive content stays safely visible.
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+                .padding(horizontal = 16.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-                ComposerTextBox(
-                    text = text,
-                    onTextChange = onTextChange,
-                    focusRequester = focusRequester,
-                    focusManager = focusManager,
-                    onSend = onSend
-                )
+            ComposerTextBox(
+                text = text,
+                onTextChange = onTextChange,
+                focusRequester = focusRequester,
+                focusManager = focusManager,
+                onSend = onSend
+            )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -102,14 +108,14 @@ fun EventComposerBar(
                     modifier = Modifier
                         .size(52.dp)
                         .background(
-                            color = MaterialTheme.colorScheme.primary,
+                            color = if (text.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                             shape = MaterialTheme.shapes.extraLarge
                         )
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = stringResource(id = R.string.send_event),
-                        tint = MaterialTheme.colorScheme.onPrimary
+                        tint = if (text.isNotBlank()) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -129,7 +135,13 @@ private fun ComposerTextBox(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 6.dp)
+                .padding(vertical = 4.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {
+                    focusRequester.requestFocus()
+                }
         ) {
             BasicTextField(
                 value = text,
@@ -138,7 +150,7 @@ private fun ComposerTextBox(
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
                 minLines = 1,
-                maxLines = 5,
+                maxLines = 6, // Allows growing upward as text is added
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     color = MaterialTheme.colorScheme.onSurface
                 ),
@@ -158,7 +170,7 @@ private fun ComposerTextBox(
                             Text(
                                 text = stringResource(id = R.string.write_memory_placeholder),
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                             )
                         }
                         innerTextField()
@@ -169,10 +181,10 @@ private fun ComposerTextBox(
 
         Box(
             modifier = Modifier
-                .padding(top = 10.dp)
+                .padding(top = 12.dp)
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f))
+                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
         )
     }
 }
@@ -189,11 +201,17 @@ private fun DateSelector(
             onClick = onClick
         )
     } else {
-        IconButton(onClick = onClick) {
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier.background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                shape = MaterialTheme.shapes.medium
+            )
+        ) {
             Icon(
                 imageVector = Icons.Default.DateRange,
                 contentDescription = stringResource(id = R.string.pick_date_time),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -208,9 +226,9 @@ private fun DatePickerPill(
         modifier = Modifier
             .clickable(onClick = onClick)
             .background(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.shapes.extraLarge)
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .padding(horizontal = 14.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Icon(
             imageVector = Icons.Default.DateRange,
@@ -220,7 +238,7 @@ private fun DatePickerPill(
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
