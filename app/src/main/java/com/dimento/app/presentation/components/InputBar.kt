@@ -13,6 +13,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dimento.app.core.ValidationConstants
-import com.dimento.app.presentation.theme.SurfaceContainerHigh
+import com.dimento.app.presentation.theme.getSubtleSurfaceColor
 import com.dimento.app.R
 
 @Composable
@@ -42,11 +43,11 @@ fun InputBar(
             value = input,
             onValueChange = { input = it.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH) },
             modifier = Modifier.weight(1f),
-            placeholder = { androidx.compose.material3.Text(stringResource(id = R.string.write_memory_placeholder)) },
+            placeholder = { Text(stringResource(id = R.string.write_memory_placeholder)) },
             shape = RoundedCornerShape(24.dp),
             colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = SurfaceContainerHigh,
-                focusedContainerColor = SurfaceContainerHigh,
+                unfocusedContainerColor = getSubtleSurfaceColor(),
+                focusedContainerColor = getSubtleSurfaceColor(),
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent
             )
@@ -60,7 +61,11 @@ fun InputBar(
             },
             modifier = Modifier.background(MaterialTheme.colorScheme.primary, RoundedCornerShape(999.dp))
         ) {
-            Icon(imageVector = Icons.Default.Send, contentDescription = stringResource(id = R.string.write_memory_placeholder), tint = MaterialTheme.colorScheme.onPrimary)
+            Icon(
+                imageVector = Icons.Default.Send,
+                contentDescription = stringResource(id = R.string.write_memory_placeholder),
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
         }
     }
 }

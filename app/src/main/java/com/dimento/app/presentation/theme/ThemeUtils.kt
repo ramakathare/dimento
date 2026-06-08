@@ -37,6 +37,8 @@ fun getEventTextColor(eventType: com.dimento.app.domain.model.EventType): Color 
     return when (eventType) {
         com.dimento.app.domain.model.EventType.TODAY -> 
             MaterialTheme.colorScheme.onPrimary
+        com.dimento.app.domain.model.EventType.FUTURE -> 
+            MaterialTheme.colorScheme.onTertiaryContainer
         else -> 
             MaterialTheme.colorScheme.onSurface
     }
@@ -68,17 +70,23 @@ fun getBackgroundColor(): Color {
 fun getSurfaceColor(): Color {
     return MaterialTheme.colorScheme.surface
 }
+
+/**
+ * Get background color for group icons based on the group name.
+ * Falls back to surfaceVariant for empty names.
+ */
 @Composable
 fun getGroupIconBackgroundColor(name: String): Color {
     return if (name.isBlank()) {
         MaterialTheme.colorScheme.surfaceVariant
     } else {
-        // color algorithm remains but shifted into common function
         val hash = name.hashCode()
         val hue = (hash.absoluteValue % 360).toFloat()
+        // Using high value and low saturation for consistent pastel look
         Color.hsv(hue, 0.25f, 0.95f)
     }
 }
+
 /**
  * Check if dark theme is active
  * Useful for theme-specific logic beyond color scheme
@@ -98,9 +106,8 @@ fun getFutureEventIndicatorColor(): Color {
 }
 
 /**
- * Subtle surface color for small UI 'islands' like search bars.
- * This should be distinct from the full background but remain
- * visually harmonious with the current theme.
+ * Subtle surface color for small UI 'islands' like search bars and input areas.
+ * This ensures consistency across the app for secondary containers.
  */
 @Composable
 fun getSubtleSurfaceColor(): Color {
@@ -115,8 +122,8 @@ fun getSubtleSurfaceColor(): Color {
 fun getContrastColor(background: Color): Color {
     // luminance() is 0..1 where higher is lighter
     return if (background.luminance() > 0.5f) {
-        Color(0xFF111111)
+        Color(0xFF111111) // Dark text on light background
     } else {
-        Color.White
+        Color.White // Light text on dark background
     }
 }
