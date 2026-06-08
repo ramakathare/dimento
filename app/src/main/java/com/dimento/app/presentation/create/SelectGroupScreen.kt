@@ -123,12 +123,13 @@ fun SelectGroupScreen(
                             Text(
                                 text = group.name,
                                 style = MaterialTheme.typography.titleMedium,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1
                             )
                             Text(
                                 text = group.description?.takeIf { it.isNotBlank() } ?: stringResource(id = R.string.no_description),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 2
                             )
                         }
@@ -154,7 +155,7 @@ fun SelectGroupScreen(
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
                             contentDescription = "Send",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
