@@ -1,5 +1,7 @@
 package com.dimento.app.presentation.timeline
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,16 +28,19 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.dimento.app.presentation.components.DateHeader
+import com.dimento.app.presentation.components.EventComposerBar
 import com.dimento.app.presentation.components.EventBubble
-import com.dimento.app.presentation.components.InputBar
 import com.dimento.app.presentation.model.TimelineItem
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,9 +52,42 @@ fun GroupTimelineScreen(
     val items by viewModel.timelineItems.collectAsState()
     val group by viewModel.group.collectAsState()
     val groups by viewModel.allGroups.collectAsState()
+    val context = LocalContext.current
     val groupId = group?.id ?: return
     var forwardEventId by remember { mutableLongStateOf(-1L) }
     var destinationGroupId by remember(groups) { mutableLongStateOf(groups.firstOrNull { it.id != groupId }?.id ?: -1L) }
+    var quickEventText by remember { mutableStateOf("") }
+    var quickEventDateMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var quickEventHasCustomDateTime by remember { mutableStateOf(false) }
+
+    val openDateTimePicker = {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = if (quickEventHasCustomDateTime) quickEventDateMillis else System.currentTimeMillis()
+        }
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, month)
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                TimePickerDialog(
+                    context,
+                    { _, hourOfDay, minute ->
+                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                        calendar.set(Calendar.MINUTE, minute)
+                        quickEventDateMillis = calendar.timeInMillis
+                        quickEventHasCustomDateTime = true
+                    },
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE),
+                    false
+                ).show()
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
 
     if (forwardEventId > 0) {
             AlertDialog(
@@ -91,7 +129,7 @@ fun GroupTimelineScreen(
                 title = { Text(group?.name ?: stringResource(id = com.dimento.app.R.string.group_label)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = stringResource(id = com.dimento.app.R.string.back))
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = com.dimento.app.R.string.back))
                     }
                 },
                 actions = {
@@ -109,7 +147,22 @@ fun GroupTimelineScreen(
             )
         },
         bottomBar = {
-            InputBar(onSend = viewModel::addQuickEvent)
+            EventComposerBar(
+                text = quickEventText,
+                selectedDateMillis = quickEventDateMillis,
+                hasCustomDateTime = quickEventHasCustomDateTime,
+                onTextChange = { quickEventText = it },
+                onPickDateTime = openDateTimePicker,
+                onSend = {
+                    viewModel.addQuickEvent(
+                        text = quickEventText,
+                        eventDateMillis = if (quickEventHasCustomDateTime) quickEventDateMillis else System.currentTimeMillis()
+                    )
+                    quickEventText = ""
+                    quickEventDateMillis = System.currentTimeMillis()
+                    quickEventHasCustomDateTime = false
+                }
+            )
         }
     ) { inner ->
         LazyColumn(

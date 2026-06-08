@@ -69,8 +69,8 @@ fun EventComposerBar(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(horizontal = 12.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
                 ComposerTextBox(
                     text = text,
@@ -126,44 +126,50 @@ private fun ComposerTextBox(
     onSend: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        BasicTextField(
-            value = text,
-            onValueChange = { onTextChange(it.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH)) },
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .focusRequester(focusRequester),
-            minLines = 1,
-            maxLines = 5,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface
-            ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            keyboardActions = KeyboardActions(
-                onSend = {
-                    if (text.isNotBlank()) {
-                        onSend()
+                .padding(vertical = 6.dp)
+        ) {
+            BasicTextField(
+                value = text,
+                onValueChange = { onTextChange(it.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
+                minLines = 1,
+                maxLines = 5,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                keyboardActions = KeyboardActions(
+                    onSend = {
+                        if (text.isNotBlank()) {
+                            onSend()
+                        }
+                        focusManager.clearFocus()
                     }
-                    focusManager.clearFocus()
-                }
-            ),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-            decorationBox = { innerTextField ->
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    if (text.isBlank()) {
-                        Text(
-                            text = stringResource(id = R.string.write_memory_placeholder),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                decorationBox = { innerTextField ->
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        if (text.isBlank()) {
+                            Text(
+                                text = stringResource(id = R.string.write_memory_placeholder),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        innerTextField()
                     }
-                    innerTextField()
                 }
-            }
-        )
+            )
+        }
 
         Box(
             modifier = Modifier
-                .padding(top = 8.dp)
+                .padding(top = 10.dp)
                 .fillMaxWidth()
                 .height(1.dp)
                 .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f))

@@ -71,16 +71,15 @@ class GroupTimelineViewModel(
         }
     }
 
-    fun addQuickEvent(text: String) {
+    fun addQuickEvent(text: String, eventDateMillis: Long = System.currentTimeMillis()) {
         if (text.isBlank()) return
         viewModelScope.launch {
             runCatching {
-                val now = System.currentTimeMillis()
                 createEventUseCase(
                     groupId = groupId,
                     text = text,
-                    eventDateMillis = now,
-                    recordedDateMillis = now
+                    eventDateMillis = eventDateMillis,
+                    recordedDateMillis = System.currentTimeMillis()
                 )
             }.onFailure { _message.value = it.message }
         }
