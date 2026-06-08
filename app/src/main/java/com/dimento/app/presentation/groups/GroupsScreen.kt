@@ -1,5 +1,7 @@
 package com.dimento.app.presentation.groups
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -33,7 +35,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DirectionsBike
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.Build
@@ -94,16 +95,20 @@ import com.dimento.app.R
 import com.dimento.app.core.ImageStore
 import com.dimento.app.core.ValidationConstants
 import com.dimento.app.domain.model.SearchResult
+import com.dimento.app.presentation.components.EventComposerBar
 import com.dimento.app.presentation.components.GroupItem
+import com.dimento.app.presentation.create.CreateEventSharedViewModel
 import com.dimento.app.presentation.theme.getSubtleSurfaceColor
 import java.io.File
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsScreen(
     viewModel: GroupsViewModel,
+    eventDraftViewModel: CreateEventSharedViewModel,
     onOpenGroup: (Long) -> Unit,
-    onCreateEventFromFab: () -> Unit,
+    onCreateEventRequested: () -> Unit,
     onExportGroupCsv: (Long) -> Unit
 ) {
     val groups by viewModel.groups.collectAsState()
@@ -111,6 +116,8 @@ fun GroupsScreen(
     val results by viewModel.results.collectAsState()
     val message by viewModel.message.collectAsState()
     val selectedGroupIds by viewModel.selectedGroupIds.collectAsState()
+    val draft by eventDraftViewModel.draft.collectAsState()
+    val context = LocalContext.current
     
     val snackbars = remember { SnackbarHostState() }
     var showCreateGroup by remember { mutableStateOf(false) }
@@ -236,22 +243,65 @@ fun GroupsScreen(
             }
         },
         floatingActionButton = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                FloatingActionButton(
-                    onClick = {
-                        groupName = ""
-                        groupIcon = null
-                        groupDescription = null
-                        showCreateGroup = true
-                    },
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                ) {
-                    Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = stringResource(id = R.string.new_group))
-                }
-                FloatingActionButton(onClick = onCreateEventFromFab) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.new_event))
-                }
+            FloatingActionButton(
+                onClick = {
+                    groupName = ""
+                    groupIcon = null
+                    groupDescription = null
+                    showCreateGroup = true
+                },
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            ) {
+                Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = stringResource(id = R.string.new_group))
             }
+        },
+        bottomBar = {
+            val openDateTimePicker = {
+                val calendar = Calendar.getInstance().apply {
+                    timeInMillis = if (draft.hasCustomDateTime) {
+                        draft.eventDateMillis
+                    } else {
+                        System.currentTimeMillis()
+                    }
+                }
+                DatePickerDialog(
+                    context,
+                    { _, year, month, dayOfMonth ->
+                        calendar.set(Calendar.YEAR, year)
+                        calendar.set(Calendar.MONTH, month)
+                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                        TimePickerDialog(
+                            context,
+                            { _, hourOfDay, minute ->
+                                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                                calendar.set(Calendar.MINUTE, minute)
+                                eventDraftViewModel.updateEventDateMillis(calendar.timeInMillis)
+                            },
+                            calendar.get(Calendar.HOUR_OF_DAY),
+                            calendar.get(Calendar.MINUTE),
+                            false
+                        ).show()
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                ).show()
+            }
+
+            EventComposerBar(
+                text = draft.text,
+                selectedDateMillis = draft.eventDateMillis,
+                hasCustomDateTime = draft.hasCustomDateTime,
+                onTextChange = eventDraftViewModel::updateText,
+                onPickDateTime = openDateTimePicker,
+                onSend = {
+                    if (draft.text.isNotBlank()) {
+                        eventDraftViewModel.setSourceGroupId(null)
+                        onCreateEventRequested()
+                    }
+                },
+                modifier = Modifier.imePadding()
+            )
         },
         snackbarHost = { SnackbarHost(hostState = snackbars) }
     ) { inner ->

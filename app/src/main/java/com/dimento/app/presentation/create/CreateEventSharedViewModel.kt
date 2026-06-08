@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 data class EventDraft(
     val text: String = "",
     val eventDateMillis: Long = System.currentTimeMillis(),
+    val hasCustomDateTime: Boolean = false,
     val voicePath: String? = null,
     val sourceGroupId: Long? = null
 )
@@ -31,7 +32,10 @@ class CreateEventSharedViewModel(
     }
 
     fun updateEventDateMillis(value: Long) {
-        _draft.value = _draft.value.copy(eventDateMillis = value)
+        _draft.value = _draft.value.copy(
+            eventDateMillis = value,
+            hasCustomDateTime = true
+        )
     }
 
     fun setSourceGroupId(groupId: Long?) {
@@ -46,11 +50,16 @@ class CreateEventSharedViewModel(
             return
         }
         viewModelScope.launch {
+            val eventDateMillis = if (snapshot.hasCustomDateTime) {
+                snapshot.eventDateMillis
+            } else {
+                System.currentTimeMillis()
+            }
             runCatching {
                 createEventUseCase(
                     groupId = groupId,
                     text = snapshot.text,
-                    eventDateMillis = snapshot.eventDateMillis,
+                    eventDateMillis = eventDateMillis,
                     recordedDateMillis = System.currentTimeMillis(),
                     voicePath = snapshot.voicePath
                 )

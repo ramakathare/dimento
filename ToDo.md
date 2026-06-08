@@ -1,4 +1,4 @@
  - Auto a Welcome event when new group is created.
  - When Group is edited create an event in the same group
  - After deleting group, we see undo. After undo timedout we are seeing the deleted group for split second.
- - I don't like the + plus button and separate screen for create event. Instead it should be like text box -> next -> select group -> send. the text box will have inline date picker.
+ - [x] Replace the + plus button and separate create-event screen with a text box -> next -> select group -> send flow, including an inline date picker in the text box.

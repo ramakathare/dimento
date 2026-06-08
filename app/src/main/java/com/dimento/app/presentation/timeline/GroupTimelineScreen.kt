@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,7 +42,6 @@ import com.dimento.app.presentation.model.TimelineItem
 fun GroupTimelineScreen(
     viewModel: GroupTimelineViewModel,
     onBack: () -> Unit,
-    onCreateInGroup: (Long) -> Unit,
     onSearchInGroup: (Long) -> Unit
 ) {
     val items by viewModel.timelineItems.collectAsState()
@@ -110,11 +107,6 @@ fun GroupTimelineScreen(
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onCreateInGroup(groupId) }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = com.dimento.app.R.string.create_event_title))
-            }
         },
         bottomBar = {
             InputBar(onSend = viewModel::addQuickEvent)
