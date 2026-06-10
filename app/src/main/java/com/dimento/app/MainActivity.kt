@@ -70,7 +70,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ServiceLocator.init(this)
         maybeAskNotificationPermission()
         enableEdgeToEdge()
         setContent {

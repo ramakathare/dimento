@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dimento.app.domain.usecase.CreateEventUseCase
 import com.dimento.app.core.ServiceLocator
+import com.dimento.app.core.ValidationConstants
 import com.dimento.app.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,7 @@ class CreateEventSharedViewModel(
     val message: StateFlow<String?> = _message.asStateFlow()
 
     fun updateText(text: String) {
-        _draft.value = _draft.value.copy(text = text.take(200))
+        _draft.value = _draft.value.copy(text = text.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH))
     }
 
     fun updateEventDateMillis(value: Long) {

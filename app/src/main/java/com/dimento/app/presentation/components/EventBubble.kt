@@ -22,7 +22,6 @@ import com.dimento.app.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import com.dimento.app.domain.model.EventType
 import com.dimento.app.domain.model.MemoryEvent

@@ -1,5 +1,6 @@
 package com.dimento.app.presentation.groups
 
+import kotlinx.coroutines.FlowPreview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dimento.app.domain.model.GroupSummary
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+@OptIn(FlowPreview::class)
 class GroupsViewModel(
     observeGroupSummariesUseCase: ObserveGroupSummariesUseCase,
     private val createGroupUseCase: CreateGroupUseCase,
@@ -48,7 +50,6 @@ class GroupsViewModel(
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message.asStateFlow()
 
-    @OptIn(kotlinx.coroutines.FlowPreview::class)
     val results: StateFlow<SearchResult> = _query
         .debounce(300)
         .flatMapLatest { q ->
@@ -102,7 +103,7 @@ class GroupsViewModel(
         commitPendingDeletions()
 
         _pendingDeletions.value = idsToDelete
-        _message.value = if (idsToDelete.size == 1) "Group deleted" else "${idsToDelete.size} groups deleted"
+        _message.value = if (idsToDelete.size == 1) DELETE_SINGLE_MSG else "${idsToDelete.size}$DELETE_MULTI_MSG"
 
         undoJob = viewModelScope.launch {
             delay(5000)
@@ -136,5 +137,10 @@ class GroupsViewModel(
     override fun onCleared() {
         commitPendingDeletions()
         super.onCleared()
+    }
+
+    private companion object {
+        const val DELETE_SINGLE_MSG = "Group deleted"
+        const val DELETE_MULTI_MSG = " groups deleted"
     }
 }
