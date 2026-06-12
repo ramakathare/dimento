@@ -13,10 +13,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -30,12 +30,13 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,12 +49,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,12 +68,12 @@ fun EventComposerBar(
     hasCustomDateTime: Boolean,
     onTextChange: (String) -> Unit,
     onPickDateTime: () -> Unit,
+    onClearDateTime: () -> Unit,
     onSend: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val focusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
-    var showAttachmentMenu by remember { mutableStateOf(false) }
+    var showSettingsPanel by remember { mutableStateOf(false) }
 
     Surface(
         modifier = modifier
@@ -92,16 +91,22 @@ fun EventComposerBar(
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Attachment menu (expands below the text box row)
+            // Settings panel: date + attach options (below the text box)
             AnimatedVisibility(
-                visible = showAttachmentMenu,
+                visible = showSettingsPanel,
                 enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
                 exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
             ) {
-                AttachmentMenu(modifier = Modifier.padding(bottom = 4.dp))
+                SettingsPanel(
+                    selectedDateMillis = selectedDateMillis,
+                    hasCustomDateTime = hasCustomDateTime,
+                    onPickDateTime = onPickDateTime,
+                    onClearDateTime = onClearDateTime,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
             }
 
-            // Main input row — WhatsApp style: clip | text field | date | send
+            // Main input row — only gear + text field + send
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -112,15 +117,16 @@ fun EventComposerBar(
                     .padding(start = 4.dp, end = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Clip / attachment button
+                // Settings gear icon
                 IconButton(
-                    onClick = { showAttachmentMenu = !showAttachmentMenu },
+                    onClick = { showSettingsPanel = !showSettingsPanel },
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.AttachFile,
-                        contentDescription = stringResource(id = R.string.attach),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(id = R.string.settings),
+                        tint = if (showSettingsPanel) MaterialTheme.colorScheme.primary
+                               else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -142,7 +148,6 @@ fun EventComposerBar(
                             if (text.isNotBlank()) {
                                 onSend()
                             }
-                            focusManager.clearFocus()
                         }
                     ),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
@@ -167,32 +172,12 @@ fun EventComposerBar(
                     }
                 )
 
-                // Date button — shows a chip when custom date is set, otherwise an icon
-                if (hasCustomDateTime) {
-                    DatePickerPill(
-                        label = DateFormats.eventDateTimeMillis(selectedDateMillis),
-                        onClick = onPickDateTime
-                    )
-                } else {
-                    IconButton(
-                        onClick = onPickDateTime,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = stringResource(id = R.string.pick_date_time),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
                 // Send button
                 IconButton(
                     onClick = {
                         if (text.isNotBlank()) {
                             onSend()
                         }
-                        focusManager.clearFocus()
                     },
                     enabled = text.isNotBlank(),
                     modifier = Modifier
@@ -217,13 +202,68 @@ fun EventComposerBar(
 }
 
 @Composable
-private fun AttachmentMenu(modifier: Modifier = Modifier) {
+private fun SettingsPanel(
+    selectedDateMillis: Long,
+    hasCustomDateTime: Boolean,
+    onPickDateTime: () -> Unit,
+    onClearDateTime: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(modifier = modifier.fillMaxWidth()) {
+        // Date row
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) { /* prevent click-through */ },
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            if (hasCustomDateTime) {
+                // Selected date bubble — clickable to change, removable
+                Row(
+                    modifier = Modifier
+                        .clickable(onClick = onPickDateTime)
+                        .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(16.dp))
+                        .padding(start = 10.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = stringResource(id = R.string.pick_date_time),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = DateFormats.eventDateTimeMillis(selectedDateMillis),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(id = R.string.clear_date_time),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                        modifier = Modifier
+                            .size(18.dp)
+                            .clickable(onClick = onClearDateTime)
+                    )
+                }
+            } else {
+                // Date picker option
+                AttachmentOption(
+                    icon = Icons.Default.DateRange,
+                    label = stringResource(id = R.string.pick_date_time),
+                    onClick = onPickDateTime
+                )
+            }
+
+            // Attach options
             AttachmentOption(
                 icon = Icons.Default.Image,
                 label = stringResource(id = R.string.attach_gallery),
@@ -279,35 +319,6 @@ private fun AttachmentOption(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.width(48.dp),
             softWrap = false
-        )
-    }
-}
-
-@Composable
-private fun DatePickerPill(
-    label: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(16.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.DateRange,
-            contentDescription = stringResource(id = R.string.pick_date_time),
-            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.size(14.dp)
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
         )
     }
 }

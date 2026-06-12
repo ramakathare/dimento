@@ -54,6 +54,8 @@
     <string name="export_success">Group CSV exported to Downloads</string>
     <string name="undo">Undo</string>
     <string name="attach">Attach</string>
+    <string name="settings">Settings</string>
+    <string name="clear_date_time">Clear date and time</string>
     <string name="attach_gallery">Gallery</string>
     <string name="attach_location">Location</string>
     <string name="attach_contact">Contact</string>

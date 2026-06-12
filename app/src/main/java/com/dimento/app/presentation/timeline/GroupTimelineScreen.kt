@@ -265,6 +265,10 @@ fun GroupTimelineScreen(
                     hasCustomDateTime = quickEventHasCustomDateTime,
                     onTextChange = { quickEventText = it },
                     onPickDateTime = openDateTimePicker,
+                    onClearDateTime = {
+                        quickEventHasCustomDateTime = false
+                        quickEventDateMillis = System.currentTimeMillis()
+                    },
                     onSend = {
                         viewModel.addQuickEvent(
                             text = quickEventText,
@@ -285,7 +289,7 @@ fun GroupTimelineScreen(
                     .fillMaxSize()
                     .padding(inner),
                 contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(0.dp)
+                verticalArrangement = Arrangement.spacedBy(1.dp)
             ) {
                 items(
                     items = items,

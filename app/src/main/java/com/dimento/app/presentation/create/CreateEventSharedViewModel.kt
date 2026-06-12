@@ -39,6 +39,13 @@ class CreateEventSharedViewModel(
         )
     }
 
+    fun clearDateTime() {
+        _draft.value = _draft.value.copy(
+            eventDateMillis = System.currentTimeMillis(),
+            hasCustomDateTime = false
+        )
+    }
+
     fun setSourceGroupId(groupId: Long?) {
         _draft.value = _draft.value.copy(sourceGroupId = groupId)
     }

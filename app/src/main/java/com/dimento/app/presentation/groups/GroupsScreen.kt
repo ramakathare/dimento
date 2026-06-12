@@ -275,6 +275,7 @@ fun GroupsScreen(
                 hasCustomDateTime = draft.hasCustomDateTime,
                 onTextChange = eventDraftViewModel::updateText,
                 onPickDateTime = openDateTimePicker,
+                onClearDateTime = eventDraftViewModel::clearDateTime,
                 onSend = {
                     if (draft.text.isNotBlank()) {
                         eventDraftViewModel.setSourceGroupId(null)
