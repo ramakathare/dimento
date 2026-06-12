@@ -68,8 +68,8 @@
     <string name="group_deleted">Group deleted</string>
 
     <!-- Permission request -->
-    <string name="permission_title">Permissions Needed</string>
-    <string name="permission_message">DiMento needs a couple of permissions to work properly:\n\n1. 🔔 <b>Notifications</b> — to remind you of events due today\n2. ⏰ <b>Set alarms &amp; reminders</b> — to notify you at the exact event time</string>
+    <string name="permission_title">Permission Needed</string>
+    <string name="permission_message">DiMento needs permission to show notifications for your events.</string>
     <string name="permission_ok">OK, let\'s go</string>
     <string name="permission_skip">Skip</string>
 </resources>

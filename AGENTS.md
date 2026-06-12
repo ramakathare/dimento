@@ -31,6 +31,7 @@ Applies to:
 * Always check if a **shared pattern already exists**
 * If reused ≥2 times → move to **Common Section**
 * Features should **reference**, not redefine
+* `private fun` in a file can't be imported — when extracting, make extracted functions public top-level
 
 ---
 
@@ -92,6 +93,7 @@ Reusable components:
 * DateHeader
 * InputBar
 * GroupItem
+* GroupIconView (extracted from GroupsScreen)
 
 Rules:
 
@@ -107,6 +109,8 @@ Single source of truth:
 
 * Use `MaterialTheme.colorScheme` only
 * No hardcoded colors
+* `AppBarStyles.defaultColors()` — single source for TopAppBar colors, use `@OptIn(ExperimentalMaterial3Api::class)` and avoid explicit `TopAppBarColors` return type (use implicit `= expression`)
+* `getSubtleSurfaceColor()`, `getEventContainerColor()`, `getEventTextColor()` — semantic helpers in `ThemeUtils.kt`
 
 ### Semantic Usage
 
@@ -129,6 +133,11 @@ Single source of truth:
 * PAST → `event_date < today`
 * TODAY → `event_date == today`
 * FUTURE → `event_date > today`
+
+### CSV Export
+
+* Use `CsvUtils.escape()` and `CsvUtils.sanitizeFileName()` from `core/CsvUtils.kt`
+* Shared CSV header constant in each use case companion object
 
 ---
 
@@ -181,6 +190,8 @@ Follow strictly:
 * Immutable UI state
 * Use cases only
 * No DB access
+* **Cold one-shot flows** (`flow { emit(getX()) }.stateIn(...)`) never update — use `observeX().map { ... }.stateIn(...)` instead
+* **`@OptIn`** goes on the class declaration, not on individual properties
 
 ---
 
@@ -194,6 +205,13 @@ Always consider:
 * Empty states
 * Null values
 * Notification sync
+
+## 9. ⚠️ Kotlin/Compose Pitfalls
+
+* **`SimpleDateFormat` is not thread-safe** — always use `java.time.format.DateTimeFormatter` in shared `object`s
+* **Magic numbers** in ViewModels — use `ValidationConstants.*` constants instead (e.g. `MAX_EVENT_TEXT_LENGTH`)
+* **`@Composable` getters** on object properties don't work — use `@Composable fun()` instead
+* **`withTransaction`** is unnecessary for single DAO calls — only use for multi-DAO atomic operations
 
 ---
 
@@ -336,4 +354,3 @@ These guidelines supplement the system rules with practical, actionable refactor
 * **Refactor Goal:** Prefer clear, minimal abstractions. Do not introduce indirection unless it reduces duplication or improves testability.
 
 Apply these rules on each PR; use code review to enforce them.
-

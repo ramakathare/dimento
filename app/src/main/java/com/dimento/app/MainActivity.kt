@@ -74,13 +74,10 @@ class MainActivity : ComponentActivity() {
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {
-        // After notification permission, request exact alarm settings
+        // After notification permission, check exact alarm settings
         requestExactAlarmIfNeeded()
     }
 
-    /**
-     * Launcher for the SCHEDULE_EXACT_ALARM system-settings screen (API 34+).
-     */
     private val exactAlarmSettingsLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
@@ -97,33 +94,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Starts the permission flow: first notifications, then exact alarm settings.
-     */
     fun startPermissionFlow() {
-        // Step 1: Request notifications (runtime dialog)
         if (Build.VERSION.SDK_INT >= 33) {
             val isGranted = ContextCompat.checkSelfPermission(
                 this, Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
             if (!isGranted) {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                return // Step 2 (exact alarm) will be triggered from the callback
+                return
             }
         }
-        // Notifications already granted or not needed → go to step 2
         requestExactAlarmIfNeeded()
     }
 
-    /**
-     * On API 34+, SCHEDULE_EXACT_ALARM must be granted via system settings.
-     */
     private fun requestExactAlarmIfNeeded() {
         if (PermissionManager.needsExactAlarmSettings(this)) {
             try {
                 val intent = PermissionManager.openExactAlarmSettings(this)
                 exactAlarmSettingsLauncher.launch(intent)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Failed to open exact alarm settings
             }
         }
@@ -140,12 +129,14 @@ private fun DiMentoAppRoot() {
     LaunchedEffect(Unit) {
         delay(500)
         showSplash = false
-        // Check if we need to show the permission prompt
-        if (activity != null && !PermissionManager.hasSkipped(context)) {
+        // Show permission dialog only once per install
+        if (activity != null
+            && !PermissionManager.isCompleted(context)
+            && !PermissionManager.hasSkipped(context)
+        ) {
             val needsNotifications = Build.VERSION.SDK_INT >= 33 &&
                 ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-            val needsExactAlarm = PermissionManager.needsExactAlarmSettings(context)
-            if (needsNotifications || needsExactAlarm) {
+            if (needsNotifications) {
                 showPermissionDialog = true
             }
         }
@@ -161,6 +152,7 @@ private fun DiMentoAppRoot() {
             PermissionExplanationDialog(
                 onOk = {
                     showPermissionDialog = false
+                    PermissionManager.markCompleted(context)
                     (activity as? MainActivity)?.startPermissionFlow()
                 },
                 onSkip = {
