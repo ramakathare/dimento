@@ -38,6 +38,8 @@ class MemoryRepositoryImpl(
 
     override suspend fun getGroup(groupId: Long): MemoryGroup? = groupDao.getById(groupId)?.toDomain()
 
+    override suspend fun getEvent(eventId: Long): MemoryEvent? = eventDao.getById(eventId)?.toDomain()
+
     override suspend fun createGroup(name: String, icon: String?, description: String?): Long {
         return groupDao.insert(
             MemoryGroupEntity(

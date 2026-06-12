@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dimento.app.R
 import com.dimento.app.domain.model.SearchResult
+import com.dimento.app.notifications.EventNotificationScheduler
 import com.dimento.app.presentation.components.DateHeader
 import com.dimento.app.presentation.components.EventBubble
 import com.dimento.app.presentation.components.EventComposerBar
@@ -107,6 +108,18 @@ fun GroupTimelineScreen(
         } else if (showSearchField) {
             showSearchField = false
             viewModel.onSearchQueryChange("")
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.onScheduleNotification.collect { notification ->
+            EventNotificationScheduler.schedule(context, notification.eventId, notification.eventDateMillis)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.onCancelNotification.collect { eventId ->
+            EventNotificationScheduler.cancel(context, eventId)
         }
     }
 

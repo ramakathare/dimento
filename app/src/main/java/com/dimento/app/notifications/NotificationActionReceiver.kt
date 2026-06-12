@@ -19,8 +19,14 @@ class NotificationActionReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             val container = ServiceLocator.container
             when (action) {
-                ACTION_MARK_COMPLETE -> container.markEventCompleteUseCase(eventId, System.currentTimeMillis())
-                ACTION_DELETE -> container.deleteEventUseCase(eventId)
+                ACTION_MARK_COMPLETE -> {
+                    container.markEventCompleteUseCase(eventId, System.currentTimeMillis())
+                    EventNotificationScheduler.cancel(context, eventId)
+                }
+                ACTION_DELETE -> {
+                    container.deleteEventUseCase(eventId)
+                    EventNotificationScheduler.cancel(context, eventId)
+                }
             }
             pendingResult.finish()
         }

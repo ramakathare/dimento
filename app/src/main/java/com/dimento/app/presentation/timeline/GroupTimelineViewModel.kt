@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dimento.app.domain.model.EventType
 import com.dimento.app.domain.model.MemoryGroup
+import com.dimento.app.domain.model.MemoryEvent
 import com.dimento.app.domain.usecase.CreateEventUseCase
 import com.dimento.app.domain.usecase.DeleteEventUseCase
 import com.dimento.app.domain.usecase.ForwardEventUseCase
@@ -17,6 +18,9 @@ import com.dimento.app.domain.util.EventTypeResolver
 import com.dimento.app.presentation.model.TimelineItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +30,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import com.dimento.app.domain.model.SearchResult
+
+data class OnScheduleNotification(
+    val eventId: Long,
+    val eventDateMillis: Long
+)
 
 class GroupTimelineViewModel(
     private val groupId: Long,
@@ -97,15 +106,26 @@ class GroupTimelineViewModel(
                     eventDateMillis = eventDateMillis,
                     recordedDateMillis = System.currentTimeMillis()
                 )
+            }.onSuccess { createResult ->
+                if (createResult.eventType == EventType.FUTURE) {
+                    _onScheduleNotification.tryEmit(OnScheduleNotification(createResult.eventId, eventDateMillis))
+                }
             }.onFailure { _message.value = it.message }
         }
     }
 
+    private val _onScheduleNotification = MutableSharedFlow<OnScheduleNotification>(extraBufferCapacity = 1)
+    val onScheduleNotification: SharedFlow<OnScheduleNotification> = _onScheduleNotification.asSharedFlow()
+
     fun delete(eventId: Long) {
         viewModelScope.launch {
             deleteEventUseCase(eventId)
+            _onCancelNotification.tryEmit(eventId)
         }
     }
+
+    private val _onCancelNotification = MutableSharedFlow<Long>(extraBufferCapacity = 1)
+    val onCancelNotification: SharedFlow<Long> = _onCancelNotification.asSharedFlow()
 
     fun forward(eventId: Long, destinationGroupId: Long) {
         viewModelScope.launch {
@@ -153,6 +173,7 @@ class GroupTimelineViewModel(
         viewModelScope.launch {
             ids.forEach { id ->
                 runCatching { deleteEventUseCase(id) }
+                _onCancelNotification.tryEmit(id)
             }
         }
     }

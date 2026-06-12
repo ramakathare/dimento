@@ -2,12 +2,17 @@ package com.dimento.app.presentation.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dimento.app.domain.model.EventType
 import com.dimento.app.domain.usecase.CreateEventUseCase
 import com.dimento.app.core.ServiceLocator
 import com.dimento.app.core.ValidationConstants
 import com.dimento.app.R
+import com.dimento.app.presentation.timeline.OnScheduleNotification
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
@@ -27,6 +32,9 @@ class CreateEventSharedViewModel(
 
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message.asStateFlow()
+
+    private val _onScheduleNotification = MutableSharedFlow<OnScheduleNotification>(extraBufferCapacity = 1)
+    val onScheduleNotification: SharedFlow<OnScheduleNotification> = _onScheduleNotification.asSharedFlow()
 
     fun updateText(text: String) {
         _draft.value = _draft.value.copy(text = text.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH))
@@ -71,8 +79,11 @@ class CreateEventSharedViewModel(
                     recordedDateMillis = System.currentTimeMillis(),
                     voicePath = snapshot.voicePath
                 )
-            }.onSuccess {
+            }.onSuccess { createResult ->
                 _draft.value = EventDraft(sourceGroupId = snapshot.sourceGroupId)
+                if (createResult.eventType == EventType.FUTURE) {
+                    _onScheduleNotification.tryEmit(OnScheduleNotification(createResult.eventId, eventDateMillis))
+                }
                 onDone()
             }.onFailure {
                 _message.value = it.message
