@@ -91,76 +91,77 @@ fun EventComposerBar(
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Main input row — text field + gear (send button is outside the box)
+            // Main input row — text field + gear + send (send is part of the same row but outside the text box)
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                    .padding(start = 4.dp, end = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // Text field
-                BasicTextField(
-                    value = text,
-                    onValueChange = { onTextChange(it.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH)) },
+                // Text field + gear inside the rounded box
+                Row(
                     modifier = Modifier
                         .weight(1f)
-                        .focusRequester(focusRequester),
-                    minLines = 1,
-                    maxLines = 6,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface
-                    ),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    keyboardActions = KeyboardActions(
-                        onSend = {
-                            // Enter on keyboard adds newline, does not send
-                        }
-                    ),
-                    keyboardOptions = KeyboardOptions.Default,
-                    decorationBox = { innerTextField ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) { focusRequester.requestFocus() }
-                        ) {
-                            if (text.isBlank()) {
-                                Text(
-                                    text = stringResource(id = R.string.write_memory_placeholder),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
-
-                // Settings gear icon
-                IconButton(
-                    onClick = { showSettingsPanel = !showSettingsPanel },
-                    modifier = Modifier.size(40.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .padding(start = 4.dp, end = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = stringResource(id = R.string.settings),
-                        tint = if (showSettingsPanel) MaterialTheme.colorScheme.primary
-                               else MaterialTheme.colorScheme.onSurfaceVariant
+                    // Text field
+                    BasicTextField(
+                        value = text,
+                        onValueChange = { onTextChange(it.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH)) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusRequester(focusRequester),
+                        minLines = 1,
+                        maxLines = 6,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        keyboardActions = KeyboardActions(
+                            onSend = {
+                                // Enter on keyboard adds newline, does not send
+                            }
+                        ),
+                        keyboardOptions = KeyboardOptions.Default,
+                        decorationBox = { innerTextField ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) { focusRequester.requestFocus() }
+                            ) {
+                                if (text.isBlank()) {
+                                    Text(
+                                        text = stringResource(id = R.string.write_memory_placeholder),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
                     )
-                }
-            }
 
-            // Send button row — outside the text box, aligned to the right
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
+                    // Settings gear icon
+                    IconButton(
+                        onClick = { showSettingsPanel = !showSettingsPanel },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = stringResource(id = R.string.settings),
+                            tint = if (showSettingsPanel) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // Send button — to the right of the text box, bottom-aligned
                 IconButton(
                     onClick = {
                         if (text.isNotBlank()) {

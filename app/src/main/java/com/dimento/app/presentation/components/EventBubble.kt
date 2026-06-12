@@ -90,13 +90,16 @@ fun EventBubble(
             ) {
                 Text(
                     text = DateFormats.eventDateOnlyMillis(event.eventDateMillis),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                    color = if (type == com.dimento.app.domain.model.EventType.TODAY)
+                        textColor.copy(alpha = 0.7f)
+                    else
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                     style = MaterialTheme.typography.labelSmall,
                     maxLines = 1
                 )
                 Text(
                     text = DateFormats.eventTimeOnlyMillis(event.eventDateMillis),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = textColor.copy(alpha = 0.6f),
                     style = MaterialTheme.typography.labelSmall,
                     maxLines = 1
                 )
