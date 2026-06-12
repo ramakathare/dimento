@@ -2,6 +2,7 @@ package com.dimento.app.presentation.timeline
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -68,6 +69,7 @@ import java.util.Calendar
 @Composable
 fun GroupTimelineScreen(
     viewModel: GroupTimelineViewModel,
+    editEventId: Long = -1L,
     onBack: () -> Unit
 ) {
     val items by viewModel.timelineItems.collectAsState()
@@ -92,11 +94,7 @@ fun GroupTimelineScreen(
     var editingEvent by remember { mutableStateOf<EditingEvent?>(null) }
 
     // Handle deep link from notification "Reschedule" action
-    LaunchedEffect(Unit) {
-        val activity = context as? androidx.activity.ComponentActivity
-        val editEventId = activity?.intent?.getLongExtra(
-            com.dimento.app.notifications.NotificationActionReceiver.EXTRA_EDIT_EVENT_ID, -1L
-        ) ?: -1L
+    LaunchedEffect(editEventId) {
         if (editEventId > 0) {
             val event = viewModel.findEvent(editEventId)
             if (event != null) {
@@ -104,7 +102,19 @@ fun GroupTimelineScreen(
                 quickEventDateMillis = event.eventDateMillis
                 quickEventHasCustomDateTime = true
                 editingEvent = EditingEvent(event.id, event.text, event.eventDateMillis)
-                activity?.intent?.removeExtra(com.dimento.app.notifications.NotificationActionReceiver.EXTRA_EDIT_EVENT_ID)
+            }
+        }
+    }
+
+    // Focus the composer text field when editing starts
+    LaunchedEffect(editingEvent) {
+        if (editingEvent != null) {
+            // Small delay to ensure the composer is rendered
+            kotlinx.coroutines.delay(100)
+            val focusedView = (context as? androidx.activity.ComponentActivity)?.currentFocus
+            if (focusedView != null) {
+                val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                imm?.showSoftInput(focusedView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
             }
         }
     }

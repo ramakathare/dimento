@@ -26,6 +26,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 ACTION_DONE -> {
                     container.markEventCompleteUseCase(eventId, System.currentTimeMillis())
                     EventNotificationScheduler.cancel(context, eventId)
+                    androidx.core.app.NotificationManagerCompat.from(context).cancel(eventId.toInt())
                 }
                 ACTION_DELETE -> {
                     container.deleteEventUseCase(eventId)
