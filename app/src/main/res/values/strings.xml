@@ -76,4 +76,5 @@
     <!-- Notification actions -->
     <string name="notification_done">Done</string>
     <string name="notification_reschedule">Reschedule</string>
+    <string name="notification_event_id">Event #%1$d</string>
 </resources>

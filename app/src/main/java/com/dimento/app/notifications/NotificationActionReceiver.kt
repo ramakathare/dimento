@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.dimento.app.core.ServiceLocator
+import com.dimento.app.notifications.EventNotificationScheduler.EXTRA_EVENT_ID
 
 class NotificationActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -38,7 +39,6 @@ class NotificationActionReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        const val EXTRA_EVENT_ID = "extra_event_id"
         private const val ACTION_MARK_COMPLETE = "com.dimento.app.action.MARK_COMPLETE"
         private const val ACTION_DONE = "com.dimento.app.action.DONE"
         private const val ACTION_DELETE = "com.dimento.app.action.DELETE_EVENT"

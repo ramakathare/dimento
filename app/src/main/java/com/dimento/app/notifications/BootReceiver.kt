@@ -7,6 +7,7 @@ import com.dimento.app.core.ServiceLocator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 /**
  * Re-schedules exact alarms for all incomplete future events after device reboot.
@@ -16,22 +17,24 @@ class BootReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                ServiceLocator.init(context)
-                val container = ServiceLocator.container
-                val events = container.repository.getAllEventsWithGroupNames()
+                withTimeout(8_000L) {
+                    ServiceLocator.init(context)
+                    val container = ServiceLocator.container
+                    val events = container.repository.getAllEventsWithGroupNames()
 
-                val now = System.currentTimeMillis()
-                events.forEach { (event, _) ->
-                    if (event.completedDateMillis == null && event.eventDateMillis > now) {
-                        try {
-                            EventNotificationScheduler.schedule(context, event.id, event.eventDateMillis)
-                        } catch (_: Exception) {
-                            // Skip events that fail to schedule
+                    val now = System.currentTimeMillis()
+                    events.forEach { (event, _) ->
+                        if (event.completedDateMillis == null && event.eventDateMillis > now) {
+                            try {
+                                EventNotificationScheduler.schedule(context, event.id, event.eventDateMillis)
+                            } catch (_: Exception) {
+                                // Skip events that fail to schedule
+                            }
                         }
                     }
                 }
             } catch (_: Exception) {
-                // BootReceiver error
+                // BootReceiver error or timeout
             } finally {
                 pendingResult.finish()
             }
