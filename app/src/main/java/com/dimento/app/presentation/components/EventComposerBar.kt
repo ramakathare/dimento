@@ -93,7 +93,7 @@ fun EventComposerBar(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 // Left: text box (full width, shares row with send)
                 Box(
