@@ -73,7 +73,7 @@ fun SelectGroupScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 15.dp, vertical = 8.dp)
         ) {
             LazyColumn(
                 modifier = Modifier.weight(1f),

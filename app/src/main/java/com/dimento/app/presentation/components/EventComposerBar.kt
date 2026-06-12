@@ -74,6 +74,7 @@ fun EventComposerBar(
     Surface(
         modifier = modifier
             .fillMaxWidth()
+            .padding(horizontal = 14.dp)
             .padding(bottom = 12.dp)
             .animateContentSize(),
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 28.dp, bottomEnd = 28.dp),

@@ -59,7 +59,7 @@ fun SearchScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(inner)
-                .padding(horizontal = 16.dp, vertical = 0.dp),
+                .padding(horizontal = 15.dp, vertical = 0.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             TextField(
