@@ -20,7 +20,7 @@ class ImportEventsCsvUseCase(
      * @return Pair of (alarmsToCancel: List<Long>, alarmsToSchedule: List<Pair<Long, Long>>)
      */
     suspend operator fun invoke(csvContent: String): Pair<List<Long>, List<Pair<Long, Long>>> {
-        val lines = csvContent.trim().split("\n").map { it.trim() }.filter { it.isNotEmpty() }
+        val lines = CsvUtils.splitLines(csvContent)
         
         if (lines.isEmpty()) {
             throw ValidationException("CSV is empty")

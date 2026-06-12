@@ -6,6 +6,31 @@ object CsvUtils {
         return "\"$escaped\""
     }
 
+    /**
+     * Splits CSV content into lines, respecting quoted fields that may contain newlines.
+     */
+    fun splitLines(content: String): List<String> {
+        val lines = mutableListOf<String>()
+        val current = StringBuilder()
+        var inQuotes = false
+
+        for (char in content) {
+            when {
+                char == '"' -> inQuotes = !inQuotes
+                char == '\n' && !inQuotes -> {
+                    lines.add(current.toString().trim())
+                    current.clear()
+                    continue
+                }
+            }
+            current.append(char)
+        }
+
+        val last = current.toString().trim()
+        if (last.isNotEmpty()) lines.add(last)
+        return lines
+    }
+
     fun parseLine(line: String): List<String> {
         val result = mutableListOf<String>()
         var current = StringBuilder()

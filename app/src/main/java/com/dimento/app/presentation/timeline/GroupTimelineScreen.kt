@@ -402,6 +402,9 @@ fun GroupTimelineScreen(
                                         onLongClick = {
                                             viewModel.enterSelectionMode(eventId)
                                         },
+                                        onLinkPreviewFetched = { id, json ->
+                                            viewModel.updateLinkPreview(id, json)
+                                        },
                                         modifier = Modifier.weight(1f)
                                     )
                                 }

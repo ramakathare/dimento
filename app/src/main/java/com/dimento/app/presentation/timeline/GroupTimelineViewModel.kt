@@ -153,6 +153,15 @@ class GroupTimelineViewModel(
         }
     }
 
+    fun updateLinkPreview(eventId: Long, linkPreviewJson: String) {
+        viewModelScope.launch {
+            val event = findEvent(eventId) ?: return@launch
+            runCatching {
+                updateEventUseCase(eventId, event.text, event.eventDateMillis, voicePath = event.voicePath, linkPreviewJson = linkPreviewJson)
+            }
+        }
+    }
+
     // --- Selection ---
 
     fun toggleSelection(eventId: Long) {

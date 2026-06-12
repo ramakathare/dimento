@@ -23,6 +23,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.dimento.app.domain.model.EventType
 import com.dimento.app.domain.model.MemoryEvent
 import com.dimento.app.linkpreview.LinkPreview
+import com.dimento.app.linkpreview.LinkPreviewFetcher
 import com.dimento.app.linkpreview.UrlPreviewCard
 import com.dimento.app.presentation.theme.getEventContainerColor
 import com.dimento.app.presentation.theme.getEventTextColor
@@ -47,7 +53,8 @@ fun EventBubble(
     selected: Boolean = false,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    onLongClick: () -> Unit = onClick
+    onLongClick: () -> Unit = onClick,
+    onLinkPreviewFetched: ((eventId: Long, json: String) -> Unit)? = null
 ) {
     val backgroundColor = if (selected) {
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
@@ -107,11 +114,26 @@ fun EventBubble(
                     }
                 }
 
-                // Link preview (if stored)
-                val preview = LinkPreview.fromJson(event.linkPreviewJson)
-                if (preview != null) {
+                // Link preview (if stored, or lazy-fetch)
+                val preview = remember { mutableStateOf(LinkPreview.fromJson(event.linkPreviewJson)) }
+
+                // Lazy-fetch preview if missing and text contains a URL
+                LaunchedEffect(event.id, event.text) {
+                    if (preview.value == null && event.linkPreviewJson == null) {
+                        val url = LinkPreviewFetcher.extractUrl(event.text)
+                        if (url != null) {
+                            val fetched = LinkPreviewFetcher.fetch(url)
+                            if (fetched != null) {
+                                preview.value = fetched
+                                onLinkPreviewFetched?.invoke(event.id, fetched.toJson())
+                            }
+                        }
+                    }
+                }
+
+                if (preview.value != null) {
                     UrlPreviewCard(
-                        preview = preview,
+                        preview = preview.value,
                         modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp)
                     )
                 }
