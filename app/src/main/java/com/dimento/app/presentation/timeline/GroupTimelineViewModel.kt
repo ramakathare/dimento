@@ -9,9 +9,9 @@ import com.dimento.app.domain.usecase.CreateEventUseCase
 import com.dimento.app.domain.usecase.DeleteEventUseCase
 import com.dimento.app.domain.usecase.ForwardEventUseCase
 import com.dimento.app.domain.usecase.GetGroupUseCase
-import com.dimento.app.domain.usecase.MarkEventCompleteUseCase
 import com.dimento.app.domain.usecase.ObserveGroupsUseCase
 import com.dimento.app.domain.usecase.ObserveTimelineUseCase
+import com.dimento.app.domain.usecase.UpdateEventUseCase
 import com.dimento.app.domain.util.EventTypeResolver
 import com.dimento.app.presentation.model.TimelineItem
 import kotlinx.coroutines.delay
@@ -31,13 +31,16 @@ class GroupTimelineViewModel(
     getGroupUseCase: GetGroupUseCase,
     private val createEventUseCase: CreateEventUseCase,
     private val forwardEventUseCase: ForwardEventUseCase,
-    private val markEventCompleteUseCase: MarkEventCompleteUseCase,
     private val deleteEventUseCase: DeleteEventUseCase,
+    private val updateEventUseCase: UpdateEventUseCase,
     private val eventTypeResolver: EventTypeResolver
 ) : ViewModel() {
     private val nowTicker = MutableStateFlow(System.currentTimeMillis())
     private val _message = MutableStateFlow<String?>(null)
     val message = _message.asStateFlow()
+
+    private val _selectedEventIds = MutableStateFlow<Set<Long>>(emptySet())
+    val selectedEventIds: StateFlow<Set<Long>> = _selectedEventIds.asStateFlow()
 
     val group: StateFlow<MemoryGroup?> = observeGroupsUseCase().map { groups ->
         groups.find { it.id == groupId }
@@ -86,12 +89,6 @@ class GroupTimelineViewModel(
         }
     }
 
-    fun markComplete(eventId: Long) {
-        viewModelScope.launch {
-            markEventCompleteUseCase(eventId, System.currentTimeMillis())
-        }
-    }
-
     fun delete(eventId: Long) {
         viewModelScope.launch {
             deleteEventUseCase(eventId)
@@ -108,6 +105,46 @@ class GroupTimelineViewModel(
         }
     }
 
+    fun updateEvent(eventId: Long, text: String, eventDateMillis: Long) {
+        viewModelScope.launch {
+            runCatching {
+                updateEventUseCase(eventId, text, eventDateMillis, voicePath = null)
+            }.onFailure {
+                _message.value = it.message
+            }
+        }
+    }
+
+    // --- Selection ---
+
+    fun toggleSelection(eventId: Long) {
+        val current = _selectedEventIds.value
+        _selectedEventIds.value = if (eventId in current) {
+            current - eventId
+        } else {
+            current + eventId
+        }
+    }
+
+    fun clearSelection() {
+        _selectedEventIds.value = emptySet()
+    }
+
+    fun enterSelectionMode(eventId: Long) {
+        _selectedEventIds.value = setOf(eventId)
+    }
+
+    fun deleteSelectedEvents() {
+        val ids = _selectedEventIds.value.toList()
+        if (ids.isEmpty()) return
+        clearSelection()
+        viewModelScope.launch {
+            ids.forEach { id ->
+                runCatching { deleteEventUseCase(id) }
+            }
+        }
+    }
+
     fun consumeMessage() {
         _message.value = null
     }
@@ -119,8 +156,8 @@ class GroupTimelineViewModel(
         private val getGroupUseCase: GetGroupUseCase,
         private val createEventUseCase: CreateEventUseCase,
         private val forwardEventUseCase: ForwardEventUseCase,
-        private val markEventCompleteUseCase: MarkEventCompleteUseCase,
         private val deleteEventUseCase: DeleteEventUseCase,
+        private val updateEventUseCase: UpdateEventUseCase,
         private val eventTypeResolver: EventTypeResolver
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
@@ -132,8 +169,8 @@ class GroupTimelineViewModel(
                 getGroupUseCase = getGroupUseCase,
                 createEventUseCase = createEventUseCase,
                 forwardEventUseCase = forwardEventUseCase,
-                markEventCompleteUseCase = markEventCompleteUseCase,
                 deleteEventUseCase = deleteEventUseCase,
+                updateEventUseCase = updateEventUseCase,
                 eventTypeResolver = eventTypeResolver
             ) as T
         }

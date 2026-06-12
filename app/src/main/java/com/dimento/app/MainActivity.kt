@@ -214,8 +214,8 @@ private fun DiMentoAppContent() {
                         getGroupUseCase = container.getGroupUseCase,
                         createEventUseCase = container.createEventUseCase,
                         forwardEventUseCase = container.forwardEventUseCase,
-                        markEventCompleteUseCase = container.markEventCompleteUseCase,
                         deleteEventUseCase = container.deleteEventUseCase,
+                        updateEventUseCase = container.updateEventUseCase,
                         eventTypeResolver = container.eventTypeResolver
                     )
                 )

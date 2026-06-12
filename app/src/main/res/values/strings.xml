@@ -45,7 +45,10 @@
     <string name="memory_due_today">Event due today</string>
     <string name="mark_complete">Mark complete</string>
     <string name="delete_label">Delete</string>
+    <string name="edit_event">Edit Event</string>
+    <string name="edit_event_action">Edit event</string>
     <string name="delete_event">Delete event</string>
+    <string name="delete_selected_events">Delete selected events</string>
     <string name="forward_event">Forward event</string>
     <string name="export_failed">Export failed.</string>
     <string name="export_success">Group CSV exported to Downloads</string>
