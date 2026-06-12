@@ -216,13 +216,13 @@ private fun DiMentoAppContent() {
                         forwardEventUseCase = container.forwardEventUseCase,
                         deleteEventUseCase = container.deleteEventUseCase,
                         updateEventUseCase = container.updateEventUseCase,
+                        searchMemoriesUseCase = container.searchMemoriesUseCase,
                         eventTypeResolver = container.eventTypeResolver
                     )
                 )
                 GroupTimelineScreen(
                     viewModel = timelineViewModel,
-                    onBack = { navController.popBackStack() },
-                    onSearchInGroup = { navController.navigate(DiMentoRoute.Search.create(groupId = it)) }
+                    onBack = { navController.popBackStack() }
                 )
             }
 

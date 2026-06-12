@@ -118,12 +118,15 @@ fun GroupsScreen(
         groups.find { it.groupId == selectedGroupIds.first() }
     } else null
 
+    var showSearchField by remember { mutableStateOf(false) }
+
     val undoLabel = stringResource(R.string.undo)
 
-    BackHandler(enabled = isSelectionMode || query.isNotBlank()) {
+    BackHandler(enabled = isSelectionMode || showSearchField) {
         if (isSelectionMode) {
             viewModel.clearSelection()
-        } else {
+        } else if (showSearchField) {
+            showSearchField = false
             viewModel.onQueryChange("")
         }
     }
@@ -156,6 +159,7 @@ fun GroupsScreen(
                             when {
                                 selectedGroupIds.size > 1 -> stringResource(R.string.selected_count, selectedGroupIds.size)
                                 selectedGroup != null -> selectedGroup.name
+                                showSearchField -> stringResource(R.string.search_memories_title)
                                 else -> stringResource(R.string.app_name)
                             },
                             maxLines = 1,
@@ -164,12 +168,13 @@ fun GroupsScreen(
                         )
                     },
                     navigationIcon = {
-                        if (isSelectionMode || query.isNotBlank()) {
+                        if (isSelectionMode || showSearchField) {
                             IconButton(
                                 onClick = {
                                     if (isSelectionMode) {
                                         viewModel.clearSelection()
                                     } else {
+                                        showSearchField = false
                                         viewModel.onQueryChange("")
                                     }
                                 }
@@ -209,18 +214,27 @@ fun GroupsScreen(
                                     }
                                 )
                             }
+                        } else if (!showSearchField) {
+                            IconButton(onClick = { showSearchField = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = stringResource(id = R.string.search)
+                                )
+                            }
                         }
                     },
                     colors = AppBarStyles.defaultColors()
                 )
 
-                SearchIsland(
-                    query = query,
-                    onQueryChange = {
-                        if (isSelectionMode) viewModel.clearSelection()
-                        viewModel.onQueryChange(it)
-                    }
-                )
+                if (showSearchField) {
+                    SearchIsland(
+                        query = query,
+                        onQueryChange = {
+                            if (isSelectionMode) viewModel.clearSelection()
+                            viewModel.onQueryChange(it)
+                        }
+                    )
+                }
             }
         },
         floatingActionButton = {

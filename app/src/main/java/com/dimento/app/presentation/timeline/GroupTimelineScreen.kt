@@ -3,6 +3,9 @@ package com.dimento.app.presentation.timeline
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,11 +14,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -28,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -42,14 +47,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.dimento.app.R
+import com.dimento.app.domain.model.SearchResult
 import com.dimento.app.presentation.components.DateHeader
 import com.dimento.app.presentation.components.EventBubble
 import com.dimento.app.presentation.components.EventComposerBar
 import com.dimento.app.presentation.theme.AppBarStyles
+import com.dimento.app.presentation.theme.getSubtleSurfaceColor
 import com.dimento.app.presentation.model.TimelineItem
 import java.util.Calendar
 
@@ -57,17 +67,19 @@ import java.util.Calendar
 @Composable
 fun GroupTimelineScreen(
     viewModel: GroupTimelineViewModel,
-    onBack: () -> Unit,
-    onSearchInGroup: (Long) -> Unit
+    onBack: () -> Unit
 ) {
     val items by viewModel.timelineItems.collectAsState()
     val group by viewModel.group.collectAsState()
     val groups by viewModel.allGroups.collectAsState()
     val selectedEventIds by viewModel.selectedEventIds.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val searchResults by viewModel.searchResults.collectAsState()
     val context = LocalContext.current
     val groupId = group?.id ?: return
 
     val isSelectionMode = selectedEventIds.isNotEmpty()
+    val isSearchMode = searchQuery.isNotBlank()
 
     var forwardEventId by remember { mutableLongStateOf(-1L) }
     var destinationGroupId by remember(groups) { mutableLongStateOf(groups.firstOrNull { it.id != groupId }?.id ?: -1L) }
@@ -80,8 +92,15 @@ fun GroupTimelineScreen(
     var editText by remember { mutableStateOf("") }
     var editDateMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
-    BackHandler(enabled = isSelectionMode) {
-        viewModel.clearSelection()
+    var showSearchField by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = isSelectionMode || showSearchField) {
+        if (isSelectionMode) {
+            viewModel.clearSelection()
+        } else if (showSearchField) {
+            showSearchField = false
+            viewModel.onSearchQueryChange("")
+        }
     }
 
     val openDateTimePicker = {
@@ -191,75 +210,92 @@ fun GroupTimelineScreen(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = when {
-                            selectedEventIds.size > 1 -> stringResource(id = com.dimento.app.R.string.selected_count, selectedEventIds.size)
-                            isSelectionMode -> stringResource(id = com.dimento.app.R.string.common_selected)
-                            else -> group?.name ?: stringResource(id = com.dimento.app.R.string.group_label)
-                        },
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                },
-                navigationIcon = {
-                    if (isSelectionMode) {
-                        IconButton(onClick = { viewModel.clearSelection() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(id = com.dimento.app.R.string.back)
-                            )
-                        }
-                    } else {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(id = com.dimento.app.R.string.back)
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    if (isSelectionMode) {
-                        if (selectedEventIds.size == 1) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = when {
+                                selectedEventIds.size > 1 -> stringResource(id = com.dimento.app.R.string.selected_count, selectedEventIds.size)
+                                isSelectionMode -> stringResource(id = com.dimento.app.R.string.common_selected)
+                                showSearchField -> stringResource(id = com.dimento.app.R.string.search_memories_title)
+                                else -> group?.name ?: stringResource(id = com.dimento.app.R.string.group_label)
+                            },
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    navigationIcon = {
+                        if (isSelectionMode || showSearchField) {
                             IconButton(onClick = {
-                                val event = items.filterIsInstance<TimelineItem.EventRow>()
-                                    .find { it.event.id == selectedEventIds.first() }?.event
-                                if (event != null) {
-                                    editText = event.text
-                                    editDateMillis = event.eventDateMillis
-                                    editingEventId = event.id
+                                if (isSelectionMode) viewModel.clearSelection()
+                                else {
+                                    showSearchField = false
+                                    viewModel.onSearchQueryChange("")
                                 }
-                                viewModel.clearSelection()
                             }) {
                                 Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = stringResource(id = com.dimento.app.R.string.edit_event_action)
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(id = com.dimento.app.R.string.back)
                                 )
                             }
-                            Spacer(modifier = Modifier.width(4.dp))
+                        } else {
+                            IconButton(onClick = onBack) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(id = com.dimento.app.R.string.back)
+                                )
+                            }
                         }
-                        IconButton(onClick = { viewModel.deleteSelectedEvents() }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = stringResource(id = com.dimento.app.R.string.delete_selected_events)
-                            )
+                    },
+                    actions = {
+                        if (isSelectionMode) {
+                            if (selectedEventIds.size == 1) {
+                                IconButton(onClick = {
+                                    val event = items.filterIsInstance<TimelineItem.EventRow>()
+                                        .find { it.event.id == selectedEventIds.first() }?.event
+                                    if (event != null) {
+                                        editText = event.text
+                                        editDateMillis = event.eventDateMillis
+                                        editingEventId = event.id
+                                    }
+                                    viewModel.clearSelection()
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = stringResource(id = com.dimento.app.R.string.edit_event_action)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(4.dp))
+                            }
+                            IconButton(onClick = { viewModel.deleteSelectedEvents() }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = stringResource(id = com.dimento.app.R.string.delete_selected_events)
+                                )
+                            }
+                        } else if (!showSearchField) {
+                            IconButton(onClick = { showSearchField = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = stringResource(id = com.dimento.app.R.string.search)
+                                )
+                            }
                         }
-                    } else {
-                        IconButton(onClick = { onSearchInGroup(groupId) }) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = stringResource(id = com.dimento.app.R.string.search)
-                            )
-                        }
-                    }
-                },
-                colors = AppBarStyles.defaultColors()
-            )
+                    },
+                    colors = AppBarStyles.defaultColors()
+                )
+
+                // Search bar (appears below top bar when search icon is clicked)
+                if (showSearchField) {
+                    SearchBar(
+                        query = searchQuery,
+                        onQueryChange = viewModel::onSearchQueryChange
+                    )
+                }
+            }
         },
         bottomBar = {
-            if (!isSelectionMode) {
+            if (!isSelectionMode && !showSearchField) {
                 EventComposerBar(
                     text = quickEventText,
                     selectedDateMillis = quickEventDateMillis,
@@ -285,55 +321,173 @@ fun GroupTimelineScreen(
         }
     ) { inner ->
         Box(modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(inner),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(1.dp)
-            ) {
-                items(
-                    items = items,
-                    key = { item ->
+            if (showSearchField) {
+                // Search results
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(inner),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    searchContent(
+                        results = searchResults
+                    )
+                }
+            } else {
+                // Normal timeline
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(inner),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(1.dp)
+                ) {
+                    items(
+                        items = items,
+                        key = { item ->
+                            when (item) {
+                                is TimelineItem.Header -> "header_${item.type}"
+                                is TimelineItem.EventRow -> "event_${item.event.id}"
+                            }
+                        }
+                    ) { item ->
                         when (item) {
-                            is TimelineItem.Header -> "header_${item.type}"
-                            is TimelineItem.EventRow -> "event_${item.event.id}"
+                            is TimelineItem.Header -> DateHeader(type = item.type)
+                            is TimelineItem.EventRow -> {
+                                val eventId = item.event.id
+                                val isSelected = eventId in selectedEventIds
+                                EventBubble(
+                                    event = item.event,
+                                    type = item.type,
+                                    selected = isSelected,
+                                    onClick = {
+                                        if (isSelectionMode) {
+                                            viewModel.toggleSelection(eventId)
+                                        }
+                                    },
+                                    onLongClick = {
+                                        viewModel.enterSelectionMode(eventId)
+                                    }
+                                )
+                            }
                         }
                     }
-                ) { item ->
-                    when (item) {
-                        is TimelineItem.Header -> DateHeader(type = item.type)
-                        is TimelineItem.EventRow -> {
-                            val eventId = item.event.id
-                            val isSelected = eventId in selectedEventIds
-                            EventBubble(
-                                event = item.event,
-                                type = item.type,
-                                selected = isSelected,
-                                onClick = {
-                                    if (isSelectionMode) {
-                                        viewModel.toggleSelection(eventId)
-                                    } else {
-                                        // Normal click — no action yet (future use)
-                                    }
-                                },
-                                onLongClick = {
-                                    viewModel.enterSelectionMode(eventId)
-                                }
+
+                    if (items.isEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(id = com.dimento.app.R.string.no_memories_in_group),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
+            }
+        }
+    }
+}
 
-                if (items.isEmpty()) {
-                    item {
+@Composable
+private fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(28.dp),
+        color = getSubtleSurfaceColor(),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 15.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            BasicTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = { innerTextField ->
+                    if (query.isBlank()) {
                         Text(
-                            text = stringResource(id = com.dimento.app.R.string.no_memories_in_group),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = stringResource(id = R.string.search_memories_placeholder),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                         )
                     }
+                    innerTextField()
                 }
-            }
+            )
+        }
+    }
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.searchContent(
+    results: SearchResult
+) {
+    if (results.matchedEvents.isNotEmpty()) {
+        items(items = results.matchedEvents, key = { "event_${it.event.id}" }) { result ->
+            SearchResultRow(
+                title = result.groupName,
+                subtitle = result.event.text,
+                onClick = { }
+            )
+        }
+    }
+
+    if (results.matchedEvents.isEmpty() && results.groups.isEmpty()) {
+        item("empty_search") {
+            Text(
+                text = stringResource(id = R.string.no_matches_found),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 24.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchResultRow(
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

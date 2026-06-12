@@ -11,9 +11,11 @@ import com.dimento.app.domain.usecase.ForwardEventUseCase
 import com.dimento.app.domain.usecase.GetGroupUseCase
 import com.dimento.app.domain.usecase.ObserveGroupsUseCase
 import com.dimento.app.domain.usecase.ObserveTimelineUseCase
+import com.dimento.app.domain.usecase.SearchMemoriesUseCase
 import com.dimento.app.domain.usecase.UpdateEventUseCase
 import com.dimento.app.domain.util.EventTypeResolver
 import com.dimento.app.presentation.model.TimelineItem
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.dimento.app.domain.model.SearchResult
 
 class GroupTimelineViewModel(
     private val groupId: Long,
@@ -33,6 +36,7 @@ class GroupTimelineViewModel(
     private val forwardEventUseCase: ForwardEventUseCase,
     private val deleteEventUseCase: DeleteEventUseCase,
     private val updateEventUseCase: UpdateEventUseCase,
+    private val searchMemoriesUseCase: SearchMemoriesUseCase,
     private val eventTypeResolver: EventTypeResolver
 ) : ViewModel() {
     private val nowTicker = MutableStateFlow(System.currentTimeMillis())
@@ -41,6 +45,14 @@ class GroupTimelineViewModel(
 
     private val _selectedEventIds = MutableStateFlow<Set<Long>>(emptySet())
     val selectedEventIds: StateFlow<Set<Long>> = _selectedEventIds.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _searchResults = MutableStateFlow(SearchResult(emptyList(), emptyList()))
+    val searchResults: StateFlow<SearchResult> = _searchResults.asStateFlow()
+
+    private var searchJob: Job? = null
 
     val group: StateFlow<MemoryGroup?> = observeGroupsUseCase().map { groups ->
         groups.find { it.id == groupId }
@@ -149,6 +161,17 @@ class GroupTimelineViewModel(
         _message.value = null
     }
 
+    // --- Search ---
+
+    fun onSearchQueryChange(value: String) {
+        _searchQuery.value = value
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(180)
+            _searchResults.value = searchMemoriesUseCase(value, groupId)
+        }
+    }
+
     class Factory(
         private val groupId: Long,
         private val observeTimelineUseCase: ObserveTimelineUseCase,
@@ -158,6 +181,7 @@ class GroupTimelineViewModel(
         private val forwardEventUseCase: ForwardEventUseCase,
         private val deleteEventUseCase: DeleteEventUseCase,
         private val updateEventUseCase: UpdateEventUseCase,
+        private val searchMemoriesUseCase: SearchMemoriesUseCase,
         private val eventTypeResolver: EventTypeResolver
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
@@ -171,6 +195,7 @@ class GroupTimelineViewModel(
                 forwardEventUseCase = forwardEventUseCase,
                 deleteEventUseCase = deleteEventUseCase,
                 updateEventUseCase = updateEventUseCase,
+                searchMemoriesUseCase = searchMemoriesUseCase,
                 eventTypeResolver = eventTypeResolver
             ) as T
         }
