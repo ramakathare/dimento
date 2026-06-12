@@ -11,7 +11,7 @@ import com.dimento.app.data.local.entity.ReverseIndexEntity
 
 @Database(
     entities = [MemoryGroupEntity::class, MemoryEventEntity::class, ReverseIndexEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class DiMentoDatabase : RoomDatabase() {

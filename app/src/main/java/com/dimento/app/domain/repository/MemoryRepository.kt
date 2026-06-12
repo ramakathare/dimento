@@ -22,14 +22,16 @@ interface MemoryRepository {
         eventDateMillis: Long,
         recordedDateMillis: Long,
         voicePath: String?,
-        completedDateMillis: Long? = null
+        completedDateMillis: Long? = null,
+        linkPreviewJson: String? = null
     ): Long
 
     suspend fun updateEvent(
         eventId: Long,
         text: String,
         eventDateMillis: Long,
-        voicePath: String?
+        voicePath: String?,
+        linkPreviewJson: String? = null
     )
 
     suspend fun markEventCompleted(eventId: Long, completedDateMillis: Long)

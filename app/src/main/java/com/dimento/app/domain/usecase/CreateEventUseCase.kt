@@ -26,7 +26,8 @@ class CreateEventUseCase(
         text: String,
         eventDateMillis: Long,
         recordedDateMillis: Long,
-        voicePath: String? = null
+        voicePath: String? = null,
+        linkPreviewJson: String? = null
     ): CreateResult {
         require(text.isNotBlank()) { ValidationConstants.EVENT_TEXT_BLANK_MESSAGE }
         require(text.length <= ValidationConstants.MAX_EVENT_TEXT_LENGTH) { ValidationConstants.EVENT_TEXT_MAX_MESSAGE }
@@ -39,7 +40,7 @@ class CreateEventUseCase(
             EventType.PAST -> eventDateMillis
         }
 
-        val eventId = repository.createEvent(groupId, text.trim(), eventDateMillis, recordedDateMillis, voicePath, completedDateMillis)
+        val eventId = repository.createEvent(groupId, text.trim(), eventDateMillis, recordedDateMillis, voicePath, completedDateMillis, linkPreviewJson)
         return CreateResult(eventId = eventId, eventType = type)
     }
 }

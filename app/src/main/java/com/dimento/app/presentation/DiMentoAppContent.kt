@@ -39,7 +39,6 @@ import com.dimento.app.presentation.timeline.GroupTimelineScreen
 import com.dimento.app.presentation.timeline.GroupTimelineViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun DiMentoAppContent() {
@@ -95,16 +94,22 @@ fun DiMentoAppContent() {
         AppBackground(Modifier.fillMaxSize())
 
         val activity = context as? MainActivity
+        LaunchedEffect(activity?.sharedText) {
+            val shared = activity?.sharedText ?: return@LaunchedEffect
+            activity?.sharedText = null
+            createEventSharedViewModel.updateText(shared)
+            navController.navigate(DiMentoRoute.Groups.route) {
+                popUpTo(DiMentoRoute.Groups.route) { inclusive = true }
+            }
+        }
         LaunchedEffect(activity?.pendingRescheduleEventId) {
             val eventId = activity?.pendingRescheduleEventId ?: return@LaunchedEffect
-            if (eventId > 0) {
-                activity.pendingRescheduleEventId = -1L
-                val event = withContext(Dispatchers.IO) {
-                    runCatching { container.repository.getEvent(eventId) }.getOrNull()
-                }
-                if (event != null) {
-                    navController.navigate(DiMentoRoute.GroupTimeline.create(event.groupId, event.id))
-                }
+            activity?.pendingRescheduleEventId = -1L
+            val event = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                runCatching { container.repository.getEvent(eventId) }.getOrNull()
+            }
+            if (event != null) {
+                navController.navigate(DiMentoRoute.GroupTimeline.create(event.groupId, event.id))
             }
         }
 

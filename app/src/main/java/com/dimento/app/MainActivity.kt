@@ -30,14 +30,30 @@ class MainActivity : ComponentActivity() {
     }
 
     var pendingRescheduleEventId by mutableStateOf(-1L)
+    var sharedText: String? by mutableStateOf(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkRescheduleIntent()
+        handleShareIntent(intent)
         enableEdgeToEdge()
         setContent {
             DiMentoTheme {
                 DiMentoAppRoot()
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        handleShareIntent(intent)
+    }
+
+    private fun handleShareIntent(intent: android.content.Intent?) {
+        if (intent?.action == android.content.Intent.ACTION_SEND && intent.type == "text/plain") {
+            val text = intent.getStringExtra(android.content.Intent.EXTRA_TEXT)
+            if (!text.isNullOrBlank()) {
+                sharedText = text
             }
         }
     }

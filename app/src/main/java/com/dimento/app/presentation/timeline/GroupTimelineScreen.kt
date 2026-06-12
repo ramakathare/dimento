@@ -319,18 +319,18 @@ fun GroupTimelineScreen(
                         quickEventHasCustomDateTime = false
                         quickEventDateMillis = System.currentTimeMillis()
                     },
-                    onSend = {
+                    onSend = { linkPreviewJson ->
                         val edit = editingEvent
                         if (edit != null) {
-                            // Update existing event
                             viewModel.updateEvent(edit.id, quickEventText,
-                                if (quickEventHasCustomDateTime) quickEventDateMillis else System.currentTimeMillis())
+                                if (quickEventHasCustomDateTime) quickEventDateMillis else System.currentTimeMillis(),
+                                linkPreviewJson = linkPreviewJson)
                             editingEvent = null
                         } else {
-                            // Create new event
                             viewModel.addQuickEvent(
                                 text = quickEventText,
-                                eventDateMillis = if (quickEventHasCustomDateTime) quickEventDateMillis else System.currentTimeMillis()
+                                eventDateMillis = if (quickEventHasCustomDateTime) quickEventDateMillis else System.currentTimeMillis(),
+                                linkPreviewJson = linkPreviewJson
                             )
                         }
                         quickEventText = ""

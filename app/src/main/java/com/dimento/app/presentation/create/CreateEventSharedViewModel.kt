@@ -21,7 +21,8 @@ data class EventDraft(
     val eventDateMillis: Long = System.currentTimeMillis(),
     val hasCustomDateTime: Boolean = false,
     val voicePath: String? = null,
-    val sourceGroupId: Long? = null
+    val sourceGroupId: Long? = null,
+    val linkPreviewJson: String? = null
 )
 
 class CreateEventSharedViewModel(
@@ -38,6 +39,10 @@ class CreateEventSharedViewModel(
 
     fun updateText(text: String) {
         _draft.value = _draft.value.copy(text = text.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH))
+    }
+
+    fun updateLinkPreviewJson(json: String?) {
+        _draft.value = _draft.value.copy(linkPreviewJson = json)
     }
 
     fun updateEventDateMillis(value: Long) {
@@ -77,7 +82,8 @@ class CreateEventSharedViewModel(
                     text = snapshot.text,
                     eventDateMillis = eventDateMillis,
                     recordedDateMillis = System.currentTimeMillis(),
-                    voicePath = snapshot.voicePath
+                    voicePath = snapshot.voicePath,
+                    linkPreviewJson = snapshot.linkPreviewJson
                 )
             }.onSuccess { createResult ->
                 _draft.value = EventDraft(sourceGroupId = snapshot.sourceGroupId)

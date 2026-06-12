@@ -22,7 +22,8 @@ fun MemoryEventEntity.toDomain(): MemoryEvent = MemoryEvent(
     eventDateMillis = eventDateMillis,
     recordedDateMillis = recordedDateMillis,
     completedDateMillis = completedDateMillis,
-    voicePath = voicePath
+    voicePath = voicePath,
+    linkPreviewJson = linkPreviewJson
 )
 
 fun GroupSummaryRow.toDomain(): GroupSummary = GroupSummary(

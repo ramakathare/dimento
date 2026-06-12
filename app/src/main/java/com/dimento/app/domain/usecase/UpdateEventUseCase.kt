@@ -10,10 +10,11 @@ class UpdateEventUseCase(
         eventId: Long,
         text: String,
         eventDateMillis: Long,
-        voicePath: String?
+        voicePath: String?,
+        linkPreviewJson: String? = null
     ) {
         require(text.isNotBlank()) { ValidationConstants.EVENT_TEXT_BLANK_MESSAGE }
         require(text.length <= ValidationConstants.MAX_EVENT_TEXT_LENGTH) { ValidationConstants.EVENT_TEXT_MAX_MESSAGE }
-        repository.updateEvent(eventId, text.trim(), eventDateMillis, voicePath)
+        repository.updateEvent(eventId, text.trim(), eventDateMillis, voicePath, linkPreviewJson)
     }
 }

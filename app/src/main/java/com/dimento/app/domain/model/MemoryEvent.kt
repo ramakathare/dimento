@@ -7,5 +7,6 @@ data class MemoryEvent(
     val eventDateMillis: Long,
     val recordedDateMillis: Long,
     val completedDateMillis: Long?,
-    val voicePath: String?
+    val voicePath: String?,
+    val linkPreviewJson: String? = null
 )

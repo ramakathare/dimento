@@ -40,9 +40,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +59,10 @@ import androidx.compose.ui.unit.dp
 import com.dimento.app.R
 import com.dimento.app.core.DateFormats
 import com.dimento.app.core.ValidationConstants
+import com.dimento.app.linkpreview.LinkPreview
+import com.dimento.app.linkpreview.LinkPreviewFetcher
+import com.dimento.app.linkpreview.UrlPreviewCard
+import kotlinx.coroutines.launch
 
 @Composable
 fun EventComposerBar(
@@ -67,12 +73,24 @@ fun EventComposerBar(
     onTextChange: (String) -> Unit,
     onPickDateTime: () -> Unit,
     onClearDateTime: () -> Unit,
-    onSend: () -> Unit,
+    onSend: (linkPreviewJson: String?) -> Unit,
     onCancelEdit: (() -> Unit)? = null,
     focusRequester: FocusRequester = remember { FocusRequester() },
     modifier: Modifier = Modifier
 ) {
+    val scope = rememberCoroutineScope()
     var showSettingsPanel by remember(isEditing) { mutableStateOf(isEditing) }
+    var linkPreview by remember { mutableStateOf<LinkPreview?>(null) }
+    // Expose preview JSON for the send callback
+    var currentPreviewJson by remember { mutableStateOf<String?>(null) }
+
+    // Auto-detect URL in text and fetch preview
+    LaunchedEffect(text) {
+        val url = LinkPreviewFetcher.extractUrl(text)
+        val preview = if (url != null) LinkPreviewFetcher.fetch(url) else null
+        linkPreview = preview
+        currentPreviewJson = preview?.toJson()
+    }
 
     Surface(
         modifier = modifier
@@ -94,12 +112,13 @@ fun EventComposerBar(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Bottom
             ) {
                 // Left: text box (full width, shares row with send)
                 Box(
                     modifier = Modifier
                         .weight(1f)
+                        .align(Alignment.CenterVertically)
                         .background(
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
                             shape = RoundedCornerShape(24.dp)
@@ -167,7 +186,7 @@ fun EventComposerBar(
                 // Send button
                 IconButton(
                     onClick = {
-                        if (text.isNotBlank()) onSend()
+                        if (text.isNotBlank()) onSend(currentPreviewJson)
                     },
                     enabled = text.isNotBlank(),
                     modifier = Modifier
@@ -188,7 +207,13 @@ fun EventComposerBar(
                 }
             }
 
-            // Settings panel below the text box row
+            // Link preview card (appears below the text row)
+            UrlPreviewCard(
+                preview = linkPreview,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+
+            // Settings panel below the link preview
             AnimatedVisibility(
                 visible = showSettingsPanel,
                 enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),

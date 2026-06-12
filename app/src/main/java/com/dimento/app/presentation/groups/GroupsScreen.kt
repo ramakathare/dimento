@@ -343,8 +343,11 @@ fun GroupsScreen(
                 onTextChange = eventDraftViewModel::updateText,
                 onPickDateTime = openDateTimePicker,
                 onClearDateTime = eventDraftViewModel::clearDateTime,
-                onSend = {
+                onSend = { linkPreviewJson ->
                     if (draft.text.isNotBlank()) {
+                        if (linkPreviewJson != null) {
+                            eventDraftViewModel.updateLinkPreviewJson(linkPreviewJson)
+                        }
                         eventDraftViewModel.setSourceGroupId(null)
                         onCreateEventRequested()
                     }

@@ -67,7 +67,8 @@ class MemoryRepositoryImpl(
         eventDateMillis: Long,
         recordedDateMillis: Long,
         voicePath: String?,
-        completedDateMillis: Long?
+        completedDateMillis: Long?,
+        linkPreviewJson: String?
     ): Long {
         return database.withTransaction {
             val eventId = eventDao.insert(
@@ -77,7 +78,8 @@ class MemoryRepositoryImpl(
                     eventDateMillis = eventDateMillis,
                     recordedDateMillis = recordedDateMillis,
                     completedDateMillis = completedDateMillis,
-                    voicePath = voicePath
+                    voicePath = voicePath,
+                    linkPreviewJson = linkPreviewJson
                 )
             )
             rebuildReverseIndexForEvent(eventId)
@@ -85,14 +87,15 @@ class MemoryRepositoryImpl(
         }
     }
 
-    override suspend fun updateEvent(eventId: Long, text: String, eventDateMillis: Long, voicePath: String?) {
+    override suspend fun updateEvent(eventId: Long, text: String, eventDateMillis: Long, voicePath: String?, linkPreviewJson: String?) {
         database.withTransaction {
             val event = eventDao.getById(eventId) ?: return@withTransaction
             eventDao.update(
                 event.copy(
                     text = text,
                     eventDateMillis = eventDateMillis,
-                    voicePath = voicePath
+                    voicePath = voicePath,
+                    linkPreviewJson = linkPreviewJson
                 )
             )
             rebuildReverseIndexForEvent(eventId)

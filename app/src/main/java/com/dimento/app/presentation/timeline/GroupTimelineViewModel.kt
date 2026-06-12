@@ -96,7 +96,7 @@ class GroupTimelineViewModel(
         }
     }
 
-    fun addQuickEvent(text: String, eventDateMillis: Long = System.currentTimeMillis()) {
+    fun addQuickEvent(text: String, eventDateMillis: Long = System.currentTimeMillis(), linkPreviewJson: String? = null) {
         if (text.isBlank()) return
         viewModelScope.launch {
             runCatching {
@@ -104,7 +104,8 @@ class GroupTimelineViewModel(
                     groupId = groupId,
                     text = text,
                     eventDateMillis = eventDateMillis,
-                    recordedDateMillis = System.currentTimeMillis()
+                    recordedDateMillis = System.currentTimeMillis(),
+                    linkPreviewJson = linkPreviewJson
                 )
             }.onSuccess { createResult ->
                 if (createResult.eventType == EventType.FUTURE) {
@@ -137,10 +138,10 @@ class GroupTimelineViewModel(
         }
     }
 
-    fun updateEvent(eventId: Long, text: String, eventDateMillis: Long) {
+    fun updateEvent(eventId: Long, text: String, eventDateMillis: Long, linkPreviewJson: String? = null) {
         viewModelScope.launch {
             runCatching {
-                updateEventUseCase(eventId, text, eventDateMillis, voicePath = null)
+                updateEventUseCase(eventId, text, eventDateMillis, voicePath = null, linkPreviewJson = linkPreviewJson)
                 // Cancel old alarm; if new date is future, schedule new alarm
                 _onCancelNotification.tryEmit(eventId)
                 if (eventDateMillis > System.currentTimeMillis()) {

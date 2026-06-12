@@ -72,6 +72,9 @@ dependencies {
     // Added Material Components dependency for Material 3 themes
     implementation("com.google.android.material:material:1.13.0")
 
+    // Jsoup for HTML metadata extraction
+    implementation("org.jsoup:jsoup:1.18.3")
+
     val room_version = "2.7.0-alpha11"
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")

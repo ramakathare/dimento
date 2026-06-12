@@ -27,10 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dimento.app.domain.model.EventType
 import com.dimento.app.domain.model.MemoryEvent
+import com.dimento.app.linkpreview.LinkPreview
+import com.dimento.app.linkpreview.UrlPreviewCard
 import com.dimento.app.presentation.theme.getEventContainerColor
 import com.dimento.app.presentation.theme.getEventTextColor
 import com.dimento.app.core.DateFormats
@@ -66,46 +67,55 @@ fun EventBubble(
                     onLongClick = onLongClick
                 )
         ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(start = 12.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = event.text,
-                color = textColor,
-                style = MaterialTheme.typography.bodyLarge,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                        .padding(start = 12.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = event.text,
+                        color = textColor,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1f)
+                    )
 
-            Column(
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(start = 8.dp)
-                    .width(DATE_COLUMN_WIDTH)
-            ) {
-                Text(
-                    text = DateFormats.eventDateOnlyMillis(event.eventDateMillis),
-                    color = if (type == com.dimento.app.domain.model.EventType.TODAY)
-                        textColor.copy(alpha = 0.7f)
-                    else
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1
-                )
-                Text(
-                    text = DateFormats.eventTimeOnlyMillis(event.eventDateMillis),
-                    color = textColor.copy(alpha = 0.6f),
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1
-                )
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .padding(start = 8.dp)
+                            .width(DATE_COLUMN_WIDTH)
+                    ) {
+                        Text(
+                            text = DateFormats.eventDateOnlyMillis(event.eventDateMillis),
+                            color = if (type == com.dimento.app.domain.model.EventType.TODAY)
+                                textColor.copy(alpha = 0.7f)
+                            else
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1
+                        )
+                        Text(
+                            text = DateFormats.eventTimeOnlyMillis(event.eventDateMillis),
+                            color = textColor.copy(alpha = 0.6f),
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1
+                        )
+                    }
+                }
+
+                // Link preview (if stored)
+                val preview = LinkPreview.fromJson(event.linkPreviewJson)
+                if (preview != null) {
+                    UrlPreviewCard(
+                        preview = preview,
+                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp)
+                    )
+                }
             }
-        }
 
         if (selected) {
             Box(
