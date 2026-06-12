@@ -72,4 +72,8 @@
     <string name="permission_message">DiMento needs permission to show notifications for your events.</string>
     <string name="permission_ok">OK, let\'s go</string>
     <string name="permission_skip">Skip</string>
+
+    <!-- Notification actions -->
+    <string name="notification_done">Done</string>
+    <string name="notification_reschedule">Reschedule</string>
 </resources>

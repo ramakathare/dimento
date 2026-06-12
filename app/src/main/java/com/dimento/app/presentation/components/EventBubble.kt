@@ -44,6 +44,7 @@ fun EventBubble(
     event: MemoryEvent,
     type: EventType,
     selected: Boolean = false,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onLongClick: () -> Unit = onClick
 ) {
@@ -54,7 +55,7 @@ fun EventBubble(
     }
     val textColor = getEventTextColor(type)
 
-    Column {
+    Column(modifier = modifier) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()

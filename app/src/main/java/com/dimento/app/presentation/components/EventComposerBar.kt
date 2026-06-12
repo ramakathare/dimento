@@ -27,6 +27,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Image
@@ -62,14 +63,16 @@ fun EventComposerBar(
     text: String,
     selectedDateMillis: Long,
     hasCustomDateTime: Boolean,
+    isEditing: Boolean = false,
     onTextChange: (String) -> Unit,
     onPickDateTime: () -> Unit,
     onClearDateTime: () -> Unit,
     onSend: () -> Unit,
+    onCancelEdit: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val focusRequester = remember { FocusRequester() }
-    var showSettingsPanel by remember { mutableStateOf(false) }
+    var showSettingsPanel by remember { mutableStateOf(isEditing) }
 
     Surface(
         modifier = modifier
@@ -132,6 +135,20 @@ fun EventComposerBar(
                             }
                         }
                     )
+                }
+
+                // Cancel edit button (only visible in editing mode)
+                if (isEditing && onCancelEdit != null) {
+                    IconButton(
+                        onClick = onCancelEdit,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(id = R.string.cancel),
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
 
                 // Gear icon

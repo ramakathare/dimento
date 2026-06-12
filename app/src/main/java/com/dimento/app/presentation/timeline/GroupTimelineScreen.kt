@@ -34,7 +34,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -88,10 +87,27 @@ fun GroupTimelineScreen(
     var quickEventDateMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var quickEventHasCustomDateTime by remember { mutableStateOf(false) }
 
-    // Edit dialog state
-    var editingEventId by remember { mutableLongStateOf(-1L) }
-    var editText by remember { mutableStateOf("") }
-    var editDateMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    // Edit state: when non-null, the EventComposerBar is bound to this event
+    data class EditingEvent(val id: Long, val text: String, val dateMillis: Long)
+    var editingEvent by remember { mutableStateOf<EditingEvent?>(null) }
+
+    // Handle deep link from notification "Reschedule" action
+    LaunchedEffect(Unit) {
+        val activity = context as? androidx.activity.ComponentActivity
+        val editEventId = activity?.intent?.getLongExtra(
+            com.dimento.app.notifications.NotificationActionReceiver.EXTRA_EDIT_EVENT_ID, -1L
+        ) ?: -1L
+        if (editEventId > 0) {
+            val event = viewModel.findEvent(editEventId)
+            if (event != null) {
+                quickEventText = event.text
+                quickEventDateMillis = event.eventDateMillis
+                quickEventHasCustomDateTime = true
+                editingEvent = EditingEvent(event.id, event.text, event.eventDateMillis)
+                activity?.intent?.removeExtra(com.dimento.app.notifications.NotificationActionReceiver.EXTRA_EDIT_EVENT_ID)
+            }
+        }
+    }
 
     var showSearchField by remember { mutableStateOf(false) }
     val searchFocusRequester = remember { FocusRequester() }
@@ -191,42 +207,6 @@ fun GroupTimelineScreen(
         )
     }
 
-    // Edit dialog
-    if (editingEventId > 0) {
-        AlertDialog(
-            onDismissRequest = { editingEventId = -1L },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (editText.isNotBlank()) {
-                            viewModel.updateEvent(editingEventId, editText, editDateMillis)
-                            editingEventId = -1L
-                        }
-                    }
-                ) {
-                    Text(stringResource(id = com.dimento.app.R.string.save_label))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { editingEventId = -1L }) {
-                    Text(stringResource(id = com.dimento.app.R.string.cancel))
-                }
-            },
-            title = { Text(stringResource(id = com.dimento.app.R.string.edit_event)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextField(
-                        value = editText,
-                        onValueChange = { editText = it },
-                        label = { Text(stringResource(id = com.dimento.app.R.string.write_memory_placeholder)) },
-                        singleLine = false,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-        )
-    }
-
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -274,9 +254,10 @@ fun GroupTimelineScreen(
                                     val event = items.filterIsInstance<TimelineItem.EventRow>()
                                         .find { it.event.id == selectedEventIds.first() }?.event
                                     if (event != null) {
-                                        editText = event.text
-                                        editDateMillis = event.eventDateMillis
-                                        editingEventId = event.id
+                                        quickEventText = event.text
+                                        quickEventDateMillis = event.eventDateMillis
+                                        quickEventHasCustomDateTime = true
+                                        editingEvent = EditingEvent(event.id, event.text, event.eventDateMillis)
                                     }
                                     viewModel.clearSelection()
                                 }) {
@@ -321,6 +302,7 @@ fun GroupTimelineScreen(
                     text = quickEventText,
                     selectedDateMillis = quickEventDateMillis,
                     hasCustomDateTime = quickEventHasCustomDateTime,
+                    isEditing = editingEvent != null,
                     onTextChange = { quickEventText = it },
                     onPickDateTime = openDateTimePicker,
                     onClearDateTime = {
@@ -328,10 +310,25 @@ fun GroupTimelineScreen(
                         quickEventDateMillis = System.currentTimeMillis()
                     },
                     onSend = {
-                        viewModel.addQuickEvent(
-                            text = quickEventText,
-                            eventDateMillis = if (quickEventHasCustomDateTime) quickEventDateMillis else System.currentTimeMillis()
-                        )
+                        val edit = editingEvent
+                        if (edit != null) {
+                            // Update existing event
+                            viewModel.updateEvent(edit.id, quickEventText,
+                                if (quickEventHasCustomDateTime) quickEventDateMillis else System.currentTimeMillis())
+                            editingEvent = null
+                        } else {
+                            // Create new event
+                            viewModel.addQuickEvent(
+                                text = quickEventText,
+                                eventDateMillis = if (quickEventHasCustomDateTime) quickEventDateMillis else System.currentTimeMillis()
+                            )
+                        }
+                        quickEventText = ""
+                        quickEventDateMillis = System.currentTimeMillis()
+                        quickEventHasCustomDateTime = false
+                    },
+                    onCancelEdit = {
+                        editingEvent = null
                         quickEventText = ""
                         quickEventDateMillis = System.currentTimeMillis()
                         quickEventHasCustomDateTime = false
@@ -378,19 +375,25 @@ fun GroupTimelineScreen(
                             is TimelineItem.EventRow -> {
                                 val eventId = item.event.id
                                 val isSelected = eventId in selectedEventIds
-                                EventBubble(
-                                    event = item.event,
-                                    type = item.type,
-                                    selected = isSelected,
-                                    onClick = {
-                                        if (isSelectionMode) {
-                                            viewModel.toggleSelection(eventId)
-                                        }
-                                    },
-                                    onLongClick = {
-                                        viewModel.enterSelectionMode(eventId)
-                                    }
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    EventBubble(
+                                        event = item.event,
+                                        type = item.type,
+                                        selected = isSelected,
+                                        onClick = {
+                                            if (isSelectionMode) {
+                                                viewModel.toggleSelection(eventId)
+                                            }
+                                        },
+                                        onLongClick = {
+                                            viewModel.enterSelectionMode(eventId)
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
                             }
                         }
                     }
