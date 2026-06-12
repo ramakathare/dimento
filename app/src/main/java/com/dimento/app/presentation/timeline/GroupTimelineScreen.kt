@@ -38,6 +38,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -46,6 +47,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
@@ -79,7 +82,6 @@ fun GroupTimelineScreen(
     val groupId = group?.id ?: return
 
     val isSelectionMode = selectedEventIds.isNotEmpty()
-    val isSearchMode = searchQuery.isNotBlank()
 
     var forwardEventId by remember { mutableLongStateOf(-1L) }
     var destinationGroupId by remember(groups) { mutableLongStateOf(groups.firstOrNull { it.id != groupId }?.id ?: -1L) }
@@ -93,6 +95,13 @@ fun GroupTimelineScreen(
     var editDateMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     var showSearchField by remember { mutableStateOf(false) }
+    val searchFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(showSearchField) {
+        if (showSearchField) {
+            searchFocusRequester.requestFocus()
+        }
+    }
 
     BackHandler(enabled = isSelectionMode || showSearchField) {
         if (isSelectionMode) {
@@ -289,7 +298,8 @@ fun GroupTimelineScreen(
                 if (showSearchField) {
                     SearchBar(
                         query = searchQuery,
-                        onQueryChange = viewModel::onSearchQueryChange
+                        onQueryChange = viewModel::onSearchQueryChange,
+                        focusRequester = searchFocusRequester
                     )
                 }
             }
@@ -321,7 +331,7 @@ fun GroupTimelineScreen(
         }
     ) { inner ->
         Box(modifier = Modifier.fillMaxSize()) {
-            if (showSearchField) {
+            if (showSearchField && searchQuery.isNotBlank()) {
                 // Search results
                 LazyColumn(
                     modifier = Modifier
@@ -391,7 +401,8 @@ fun GroupTimelineScreen(
 @Composable
 private fun SearchBar(
     query: String,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit,
+    focusRequester: FocusRequester
 ) {
     Surface(
         modifier = Modifier
@@ -421,7 +432,9 @@ private fun SearchBar(
                     color = MaterialTheme.colorScheme.onSurface
                 ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
                 decorationBox = { innerTextField ->
                     if (query.isBlank()) {
                         Text(
