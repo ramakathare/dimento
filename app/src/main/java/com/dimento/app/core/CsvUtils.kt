@@ -24,7 +24,7 @@ object CsvUtils {
                     }
                 }
                 char == ',' && !inQuotes -> {
-                    result.add(current.toString().trim())
+                    result.add(current.toString())
                     current = StringBuilder()
                 }
                 else -> current.append(char)
@@ -32,7 +32,7 @@ object CsvUtils {
             i++
         }
 
-        result.add(current.toString().trim())
+        result.add(current.toString())
         return result
     }
 

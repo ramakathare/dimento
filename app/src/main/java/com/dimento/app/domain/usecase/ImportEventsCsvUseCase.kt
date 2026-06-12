@@ -134,11 +134,6 @@ class ImportEventsCsvUseCase(
         val recordedDateMillis = parseDate(fields[5], "recorded_date")
         val completedDateMillis = if (fields[6].isEmpty()) null else parseDate(fields[6], "completed_date")
         val type = fields[7]
-        
-        if (type.isEmpty() || !listOf("PAST", "TODAY", "FUTURE").contains(type)) {
-            throw ValidationException("Invalid type: '$type' (must be PAST, TODAY, or FUTURE)")
-        }
-
         // Validate voice_path (can be empty)
         val voicePath = fields[8].takeIf { it.isNotEmpty() }
 
