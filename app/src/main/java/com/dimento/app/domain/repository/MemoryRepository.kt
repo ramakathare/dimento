@@ -20,7 +20,8 @@ interface MemoryRepository {
         text: String,
         eventDateMillis: Long,
         recordedDateMillis: Long,
-        voicePath: String?
+        voicePath: String?,
+        completedDateMillis: Long? = null
     ): Long
 
     suspend fun updateEvent(

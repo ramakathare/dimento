@@ -64,7 +64,8 @@ class MemoryRepositoryImpl(
         text: String,
         eventDateMillis: Long,
         recordedDateMillis: Long,
-        voicePath: String?
+        voicePath: String?,
+        completedDateMillis: Long?
     ): Long {
         return database.withTransaction {
             val eventId = eventDao.insert(
@@ -73,7 +74,7 @@ class MemoryRepositoryImpl(
                     text = text,
                     eventDateMillis = eventDateMillis,
                     recordedDateMillis = recordedDateMillis,
-                    completedDateMillis = null,
+                    completedDateMillis = completedDateMillis,
                     voicePath = voicePath
                 )
             )

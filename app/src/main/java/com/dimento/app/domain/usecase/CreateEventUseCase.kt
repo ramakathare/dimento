@@ -2,10 +2,19 @@ package com.dimento.app.domain.usecase
 
 import com.dimento.app.core.ValidationConstants
 import com.dimento.app.domain.repository.MemoryRepository
+import com.dimento.app.domain.util.EventTypeResolver
 
 class CreateEventUseCase(
-    private val repository: MemoryRepository
+    private val repository: MemoryRepository,
+    private val eventTypeResolver: EventTypeResolver = EventTypeResolver()
 ) {
+    /**
+     * Creates an event and auto-completes it if the event date is not in the future.
+     *
+     * - No date selected (eventDateMillis ≈ now): mark as complete with recordedDateMillis
+     * - Past date: mark as complete with eventDateMillis as completed date
+     * - Future date: leave incomplete, notification will fire at the scheduled time
+     */
     suspend operator fun invoke(
         groupId: Long,
         text: String,
@@ -15,6 +24,15 @@ class CreateEventUseCase(
     ): Long {
         require(text.isNotBlank()) { ValidationConstants.EVENT_TEXT_BLANK_MESSAGE }
         require(text.length <= ValidationConstants.MAX_EVENT_TEXT_LENGTH) { ValidationConstants.EVENT_TEXT_MAX_MESSAGE }
-        return repository.createEvent(groupId, text.trim(), eventDateMillis, recordedDateMillis, voicePath)
+
+        val type = eventTypeResolver.resolve(eventDateMillis, recordedDateMillis)
+
+        val completedDateMillis = when (type) {
+            com.dimento.app.domain.model.EventType.FUTURE -> null
+            com.dimento.app.domain.model.EventType.TODAY -> recordedDateMillis
+            com.dimento.app.domain.model.EventType.PAST -> eventDateMillis
+        }
+
+        return repository.createEvent(groupId, text.trim(), eventDateMillis, recordedDateMillis, voicePath, completedDateMillis)
     }
 }
