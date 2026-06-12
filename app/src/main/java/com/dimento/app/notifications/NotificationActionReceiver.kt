@@ -23,6 +23,11 @@ class NotificationActionReceiver : BroadcastReceiver() {
                     container.markEventCompleteUseCase(eventId, System.currentTimeMillis())
                     EventNotificationScheduler.cancel(context, eventId)
                 }
+                ACTION_DONE -> {
+                    container.markEventCompleteUseCase(eventId, System.currentTimeMillis())
+                    EventNotificationScheduler.cancel(context, eventId)
+                    androidx.core.app.NotificationManagerCompat.from(context).cancel(eventId.toInt())
+                }
                 ACTION_DELETE -> {
                     container.deleteEventUseCase(eventId)
                     EventNotificationScheduler.cancel(context, eventId)
@@ -33,9 +38,12 @@ class NotificationActionReceiver : BroadcastReceiver() {
     }
 
     companion object {
+        const val EXTRA_EVENT_ID = "extra_event_id"
         private const val ACTION_MARK_COMPLETE = "com.dimento.app.action.MARK_COMPLETE"
+        private const val ACTION_DONE = "com.dimento.app.action.DONE"
         private const val ACTION_DELETE = "com.dimento.app.action.DELETE_EVENT"
-        private const val EXTRA_EVENT_ID = "extra_event_id"
+        const val ACTION_EDIT_EVENT = "com.dimento.app.action.EDIT_EVENT"
+        const val EXTRA_EDIT_EVENT_ID = "edit_event_id"
 
         fun createMarkCompletePendingIntent(context: Context, eventId: Long): PendingIntent {
             val intent = Intent(context, NotificationActionReceiver::class.java).apply {
@@ -50,6 +58,19 @@ class NotificationActionReceiver : BroadcastReceiver() {
             )
         }
 
+        fun createDonePendingIntent(context: Context, eventId: Long): PendingIntent {
+            val intent = Intent(context, NotificationActionReceiver::class.java).apply {
+                action = ACTION_DONE
+                putExtra(EXTRA_EVENT_ID, eventId)
+            }
+            return PendingIntent.getBroadcast(
+                context,
+                ("done_$eventId").hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+
         fun createDeletePendingIntent(context: Context, eventId: Long): PendingIntent {
             val intent = Intent(context, NotificationActionReceiver::class.java).apply {
                 action = ACTION_DELETE
@@ -58,6 +79,20 @@ class NotificationActionReceiver : BroadcastReceiver() {
             return PendingIntent.getBroadcast(
                 context,
                 ("delete_$eventId").hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+
+        fun createReschedulePendingIntent(context: Context, eventId: Long): PendingIntent {
+            val intent = Intent(context, com.dimento.app.MainActivity::class.java).apply {
+                action = ACTION_EDIT_EVENT
+                putExtra(EXTRA_EDIT_EVENT_ID, eventId)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            return PendingIntent.getActivity(
+                context,
+                ("reschedule_$eventId").hashCode(),
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )

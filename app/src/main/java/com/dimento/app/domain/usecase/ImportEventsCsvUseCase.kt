@@ -8,12 +8,16 @@ import java.time.format.DateTimeFormatter
 /**
  * Imports events from CSV content with strict schema validation.
  * Wipes existing data before importing.
- * CSV format: event_id,group_id,group_name,text,event_date,recorded_date,completed_date,type,voice_path
+ * Returns: alarmsToCancel (existing future event IDs), alarmsToSchedule (new future event IDs with dates)
  */
 class ImportEventsCsvUseCase(
     private val repository: MemoryRepository
 ) {
-    suspend operator fun invoke(csvContent: String) {
+    /**
+     * Imports events from CSV content.
+     * @return Pair of (alarmsToCancel: List<Long>, alarmsToSchedule: List<Pair<Long, Long>>)
+     */
+    suspend operator fun invoke(csvContent: String): Pair<List<Long>, List<Pair<Long, Long>>> {
         val lines = csvContent.trim().split("\n").map { it.trim() }.filter { it.isNotEmpty() }
         
         if (lines.isEmpty()) {
@@ -49,6 +53,12 @@ class ImportEventsCsvUseCase(
             throw ValidationException("No valid events found in CSV")
         }
 
+        // Collect existing future event IDs to cancel their alarms
+        val nowMillis = System.currentTimeMillis()
+        val alarmsToCancel = repository.getAllEventsWithGroupNames().filter { (event, _) ->
+            event.completedDateMillis == null && event.eventDateMillis > nowMillis
+        }.map { it.first.id }
+
         // Delete all existing data
         repository.wipeAllData()
 
@@ -64,11 +74,12 @@ class ImportEventsCsvUseCase(
         }
 
         // Create events with new group IDs
+        val alarmsToSchedule = mutableListOf<Pair<Long, Long>>()
         for (row in eventsToInsert) {
             val newGroupId = groupNameToId[row.groupName]
                 ?: throw ValidationException("Group '${row.groupName}' was not created properly")
-            
-            repository.createEvent(
+
+            val newEventId = repository.createEvent(
                 groupId = newGroupId,
                 text = row.text,
                 eventDateMillis = row.eventDateMillis,
@@ -76,7 +87,14 @@ class ImportEventsCsvUseCase(
                 voicePath = row.voicePath,
                 completedDateMillis = row.completedDateMillis
             )
+
+            // Schedule alarms for future incomplete events
+            if (row.completedDateMillis == null && row.eventDateMillis > nowMillis) {
+                alarmsToSchedule.add(newEventId to row.eventDateMillis)
+            }
         }
+
+        return alarmsToCancel to alarmsToSchedule
     }
 
     private fun parseCsvRow(line: String, rowNumber: Int): CsvRow {

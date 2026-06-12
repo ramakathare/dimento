@@ -36,16 +36,17 @@ class DailyMemoryNotificationWorker(
                 Intent(applicationContext, MainActivity::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            val completeIntent = NotificationActionReceiver.createMarkCompletePendingIntent(applicationContext, event.id)
-            val deleteIntent = NotificationActionReceiver.createDeletePendingIntent(applicationContext, event.id)
+            val doneIntent = NotificationActionReceiver.createDonePendingIntent(applicationContext, event.id)
+            val rescheduleIntent = NotificationActionReceiver.createReschedulePendingIntent(applicationContext, event.id)
             val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
                 .setContentTitle(applicationContext.getString(R.string.memory_due_today))
                 .setContentText(event.text)
                 .setContentIntent(openIntent)
                 .setAutoCancel(true)
-                .addAction(android.R.drawable.checkbox_on_background, applicationContext.getString(R.string.mark_complete), completeIntent)
-                .addAction(android.R.drawable.ic_delete, applicationContext.getString(R.string.delete_label), deleteIntent)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .addAction(android.R.drawable.checkbox_on_background, applicationContext.getString(R.string.notification_done), doneIntent)
+                .addAction(android.R.drawable.ic_menu_edit, applicationContext.getString(R.string.notification_reschedule), rescheduleIntent)
                 .build()
 
             NotificationManagerCompat.from(applicationContext).notify(event.id.toInt(), notification)

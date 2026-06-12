@@ -141,6 +141,11 @@ class GroupTimelineViewModel(
         viewModelScope.launch {
             runCatching {
                 updateEventUseCase(eventId, text, eventDateMillis, voicePath = null)
+                // Cancel old alarm; if new date is future, schedule new alarm
+                _onCancelNotification.tryEmit(eventId)
+                if (eventDateMillis > System.currentTimeMillis()) {
+                    _onScheduleNotification.tryEmit(OnScheduleNotification(eventId, eventDateMillis))
+                }
             }.onFailure {
                 _message.value = it.message
             }
@@ -176,6 +181,18 @@ class GroupTimelineViewModel(
                 _onCancelNotification.tryEmit(id)
             }
         }
+    }
+
+    fun findEvent(eventId: Long): MemoryEvent? {
+        return timelineItems.value
+            .filterIsInstance<TimelineItem.EventRow>()
+            .firstOrNull { it.event.id == eventId }
+            ?.event
+    }
+
+    fun startEdit(eventId: Long) {
+        val event = findEvent(eventId) ?: return
+        // The screen reads these state vars; this function signals which event to edit
     }
 
     fun consumeMessage() {

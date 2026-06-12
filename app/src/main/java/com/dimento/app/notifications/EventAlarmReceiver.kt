@@ -15,7 +15,7 @@ import com.dimento.app.notifications.DailyMemoryNotificationWorker.Companion.CHA
 
 /**
  * BroadcastReceiver that receives exact alarm intents from EventNotificationScheduler
- * and displays a notification for the event.
+ * and displays a notification with Done and Reschedule actions.
  */
 class EventAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -29,6 +29,9 @@ class EventAlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val doneIntent = NotificationActionReceiver.createDonePendingIntent(context, eventId)
+        val rescheduleIntent = NotificationActionReceiver.createReschedulePendingIntent(context, eventId)
+
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
             .setContentTitle(context.getString(R.string.memory_due_today))
@@ -36,6 +39,16 @@ class EventAlarmReceiver : BroadcastReceiver() {
             .setContentIntent(openIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .addAction(
+                android.R.drawable.checkbox_on_background,
+                context.getString(R.string.notification_done),
+                doneIntent
+            )
+            .addAction(
+                android.R.drawable.ic_menu_edit,
+                context.getString(R.string.notification_reschedule),
+                rescheduleIntent
+            )
             .build()
 
         NotificationManagerCompat.from(context).notify(eventId.toInt(), notification)
