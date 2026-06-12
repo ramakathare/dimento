@@ -48,7 +48,7 @@ fun EventBubble(
     onLongClick: () -> Unit = onClick
 ) {
     val backgroundColor = if (selected) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
     } else {
         getEventContainerColor(type)
     }
