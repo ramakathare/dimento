@@ -91,115 +91,117 @@ fun EventComposerBar(
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Main input row — text field + gear + send (send is part of the same row but outside the text box)
             Row(
-                verticalAlignment = Alignment.Bottom,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
             ) {
-                // Text field + gear inside the rounded box
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(24.dp)
-                        )
-                        .padding(start = 4.dp, end = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                // Left column: settings panel (if open) + text box
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Text field
-                    BasicTextField(
-                        value = text,
-                        onValueChange = { onTextChange(it.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH)) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .focusRequester(focusRequester),
-                        minLines = 1,
-                        maxLines = 6,
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        keyboardActions = KeyboardActions(
-                            onSend = {
-                                // Enter on keyboard adds newline, does not send
-                            }
-                        ),
-                        keyboardOptions = KeyboardOptions.Default,
-                        decorationBox = { innerTextField ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) { focusRequester.requestFocus() }
-                            ) {
-                                if (text.isBlank()) {
-                                    Text(
-                                        text = stringResource(id = R.string.write_memory_placeholder),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
-
-                    // Settings gear icon
-                    IconButton(
-                        onClick = { showSettingsPanel = !showSettingsPanel },
-                        modifier = Modifier.size(40.dp)
+                    // Settings panel: date + attach options
+                    AnimatedVisibility(
+                        visible = showSettingsPanel,
+                        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                        exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = stringResource(id = R.string.settings),
-                            tint = if (showSettingsPanel) MaterialTheme.colorScheme.primary
-                                   else MaterialTheme.colorScheme.onSurfaceVariant
+                        SettingsPanel(
+                            selectedDateMillis = selectedDateMillis,
+                            hasCustomDateTime = hasCustomDateTime,
+                            onPickDateTime = onPickDateTime,
+                            onClearDateTime = onClearDateTime,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
+                    }
+
+                    // Text box with gear inside
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                shape = RoundedCornerShape(24.dp)
+                            )
+                            .padding(start = 4.dp, end = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        BasicTextField(
+                            value = text,
+                            onValueChange = { onTextChange(it.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH)) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .focusRequester(focusRequester),
+                            minLines = 1,
+                            maxLines = 6,
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            keyboardActions = KeyboardActions(
+                                onSend = {
+                                    // Enter on keyboard adds newline, does not send
+                                }
+                            ),
+                            keyboardOptions = KeyboardOptions.Default,
+                            decorationBox = { innerTextField ->
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    if (text.isBlank()) {
+                                        Text(
+                                            text = stringResource(id = R.string.write_memory_placeholder),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                            }
+                        )
+
+                        // Settings gear icon inside the text box
+                        IconButton(
+                            onClick = { showSettingsPanel = !showSettingsPanel },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = stringResource(id = R.string.settings),
+                                tint = if (showSettingsPanel) MaterialTheme.colorScheme.primary
+                                       else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
 
-                // Send button — to the right of the text box, bottom-aligned
-                IconButton(
-                    onClick = {
-                        if (text.isNotBlank()) {
-                            onSend()
-                        }
-                    },
-                    enabled = text.isNotBlank(),
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            color = if (text.isNotBlank()) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            shape = CircleShape
-                        )
+                // Send button — to the right, bottom-aligned
+                Column(
+                    modifier = Modifier.padding(start = 4.dp),
+                    verticalArrangement = Arrangement.Bottom
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = stringResource(id = R.string.send_event),
-                        tint = if (text.isNotBlank()) MaterialTheme.colorScheme.onPrimary
-                               else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    IconButton(
+                        onClick = {
+                            if (text.isNotBlank()) {
+                                onSend()
+                            }
+                        },
+                        enabled = text.isNotBlank(),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                color = if (text.isNotBlank()) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = stringResource(id = R.string.send_event),
+                            tint = if (text.isNotBlank()) MaterialTheme.colorScheme.onPrimary
+                                   else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
-            }
-
-            // Settings panel: date + attach options (below the text box)
-            AnimatedVisibility(
-                visible = showSettingsPanel,
-                enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-                exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
-            ) {
-                SettingsPanel(
-                    selectedDateMillis = selectedDateMillis,
-                    hasCustomDateTime = hasCustomDateTime,
-                    onPickDateTime = onPickDateTime,
-                    onClearDateTime = onClearDateTime,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
             }
         }
     }
