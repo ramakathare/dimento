@@ -86,7 +86,6 @@ import com.dimento.app.R
 import com.dimento.app.core.ImageStore
 import com.dimento.app.core.ValidationConstants
 import com.dimento.app.domain.model.SearchResult
-import com.dimento.app.presentation.components.DateHeader
 import com.dimento.app.presentation.components.EventBubble
 import com.dimento.app.presentation.components.EventComposerBar
 import com.dimento.app.presentation.components.GroupIconView

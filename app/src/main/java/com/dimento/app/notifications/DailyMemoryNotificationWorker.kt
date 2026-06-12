@@ -1,8 +1,6 @@
 package com.dimento.app.notifications
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -26,7 +24,7 @@ class DailyMemoryNotificationWorker(
         val dueToday = container.getEventsDueTodayUseCase(System.currentTimeMillis())
         if (dueToday.isEmpty()) return Result.success()
 
-        createChannelIfNeeded()
+        // Channel already created in DiMentoApp.onCreate()
         if (!canNotify()) return Result.success()
 
         dueToday.take(MAX_NOTIFICATIONS).forEach { event ->
@@ -60,18 +58,6 @@ class DailyMemoryNotificationWorker(
             applicationContext,
             Manifest.permission.POST_NOTIFICATIONS
         ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun createChannelIfNeeded() {
-        val manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            applicationContext.getString(R.string.channel_due_today_name),
-            NotificationManager.IMPORTANCE_DEFAULT
-        ).apply {
-            description = applicationContext.getString(R.string.channel_due_today_description)
-        }
-        manager.createNotificationChannel(channel)
     }
 
     companion object {

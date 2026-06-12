@@ -14,7 +14,6 @@ class EventTypeResolver(
         return when {
             eventDate.isBefore(today) -> EventType.PAST
             eventDate.isAfter(today) -> EventType.FUTURE
-            eventDateMillis > nowMillis -> EventType.FUTURE
             else -> EventType.TODAY
         }
     }

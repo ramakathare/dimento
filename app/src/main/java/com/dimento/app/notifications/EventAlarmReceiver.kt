@@ -35,7 +35,7 @@ class EventAlarmReceiver : BroadcastReceiver() {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
             .setContentTitle(context.getString(R.string.memory_due_today))
-            .setContentText("Event #$eventId")
+            .setContentText(context.getString(com.dimento.app.R.string.notification_event_id, eventId))
             .setContentIntent(openIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)

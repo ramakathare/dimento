@@ -1,5 +1,7 @@
 package com.dimento.app.domain.usecase
 
+import com.dimento.app.core.CsvUtils
+import com.dimento.app.core.ValidationConstants
 import com.dimento.app.domain.repository.MemoryRepository
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -98,7 +100,7 @@ class ImportEventsCsvUseCase(
     }
 
     private fun parseCsvRow(line: String, rowNumber: Int): CsvRow {
-        val fields = parseCsvLine(line)
+        val fields = CsvUtils.parseLine(line)
         
         if (fields.size != 9) {
             throw ValidationException(
@@ -117,26 +119,21 @@ class ImportEventsCsvUseCase(
         val groupName = fields[2].takeIf { it.isNotEmpty() }
             ?: throw ValidationException("group_name cannot be empty")
         
-        if (groupName.length > 100) {
-            throw ValidationException("group_name exceeds 100 characters")
+        if (groupName.length > ValidationConstants.MAX_GROUP_NAME_LENGTH) {
+            throw ValidationException(ValidationConstants.GROUP_NAME_MAX_MESSAGE)
         }
 
         val text = fields[3].takeIf { it.isNotEmpty() }
             ?: throw ValidationException("text cannot be empty")
         
-        if (text.length > 5000) {
-            throw ValidationException("text exceeds 5000 characters")
+        if (text.length > ValidationConstants.MAX_EVENT_TEXT_LENGTH) {
+            throw ValidationException(ValidationConstants.EVENT_TEXT_MAX_MESSAGE)
         }
 
         val eventDateMillis = parseDate(fields[4], "event_date")
         val recordedDateMillis = parseDate(fields[5], "recorded_date")
         val completedDateMillis = if (fields[6].isEmpty()) null else parseDate(fields[6], "completed_date")
         val type = fields[7]
-        
-        if (type.isEmpty() || !listOf("PAST", "TODAY", "FUTURE").contains(type)) {
-            throw ValidationException("Invalid type: '$type' (must be PAST, TODAY, or FUTURE)")
-        }
-
         // Validate voice_path (can be empty)
         val voicePath = fields[8].takeIf { it.isNotEmpty() }
 
@@ -171,38 +168,6 @@ class ImportEventsCsvUseCase(
         } catch (e: Exception) {
             throw ValidationException("Invalid $fieldName: '$dateStr' (expected ISO 8601 format like 2026-06-12T14:30:45)")
         }
-    }
-
-    private fun parseCsvLine(line: String): List<String> {
-        val result = mutableListOf<String>()
-        var current = StringBuilder()
-        var inQuotes = false
-        var i = 0
-
-        while (i < line.length) {
-            val char = line[i]
-            when {
-                char == '"' -> {
-                    if (inQuotes && i + 1 < line.length && line[i + 1] == '"') {
-                        // Escaped quote
-                        current.append('"')
-                        i++ // Skip next quote
-                    } else {
-                        // Toggle quote mode
-                        inQuotes = !inQuotes
-                    }
-                }
-                char == ',' && !inQuotes -> {
-                    result.add(current.toString().trim())
-                    current = StringBuilder()
-                }
-                else -> current.append(char)
-            }
-            i++
-        }
-
-        result.add(current.toString().trim())
-        return result
     }
 
     private data class CsvRow(

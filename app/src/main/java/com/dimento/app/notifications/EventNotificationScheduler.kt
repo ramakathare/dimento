@@ -60,5 +60,5 @@ object EventNotificationScheduler {
         )
     }
 
-    internal const val EXTRA_EVENT_ID = "extra_event_id"
+    const val EXTRA_EVENT_ID = "extra_event_id"
 }
