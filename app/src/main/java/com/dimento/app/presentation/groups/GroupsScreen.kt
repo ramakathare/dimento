@@ -39,7 +39,11 @@ import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -65,6 +69,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -80,6 +86,8 @@ import com.dimento.app.R
 import com.dimento.app.core.ImageStore
 import com.dimento.app.core.ValidationConstants
 import com.dimento.app.domain.model.SearchResult
+import com.dimento.app.presentation.components.DateHeader
+import com.dimento.app.presentation.components.EventBubble
 import com.dimento.app.presentation.components.EventComposerBar
 import com.dimento.app.presentation.components.GroupIconView
 import com.dimento.app.presentation.components.GroupItem
@@ -96,7 +104,9 @@ fun GroupsScreen(
     eventDraftViewModel: CreateEventSharedViewModel,
     onOpenGroup: (Long) -> Unit,
     onCreateEventRequested: () -> Unit,
-    onExportGroupCsv: (Long) -> Unit
+    onExportGroupCsv: (Long) -> Unit,
+    onExportAllCsv: () -> Unit,
+    onImportCsv: () -> Unit
 ) {
     val groups by viewModel.groups.collectAsState()
     val query by viewModel.query.collectAsState()
@@ -112,18 +122,29 @@ fun GroupsScreen(
     var groupName by remember { mutableStateOf("") }
     var groupIcon by remember { mutableStateOf<String?>(null) }
     var groupDescription by remember { mutableStateOf<String?>(null) }
+    var showSettingsMenu by remember { mutableStateOf(false) }
     
     val isSelectionMode = selectedGroupIds.isNotEmpty()
     val selectedGroup = if (selectedGroupIds.size == 1) {
         groups.find { it.groupId == selectedGroupIds.first() }
     } else null
 
+    var showSearchField by remember { mutableStateOf(false) }
+    val searchFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(showSearchField) {
+        if (showSearchField) {
+            searchFocusRequester.requestFocus()
+        }
+    }
+
     val undoLabel = stringResource(R.string.undo)
 
-    BackHandler(enabled = isSelectionMode || query.isNotBlank()) {
+    BackHandler(enabled = isSelectionMode || showSearchField) {
         if (isSelectionMode) {
             viewModel.clearSelection()
-        } else {
+        } else if (showSearchField) {
+            showSearchField = false
             viewModel.onQueryChange("")
         }
     }
@@ -156,6 +177,7 @@ fun GroupsScreen(
                             when {
                                 selectedGroupIds.size > 1 -> stringResource(R.string.selected_count, selectedGroupIds.size)
                                 selectedGroup != null -> selectedGroup.name
+                                showSearchField -> stringResource(R.string.search_memories_title)
                                 else -> stringResource(R.string.app_name)
                             },
                             maxLines = 1,
@@ -164,12 +186,13 @@ fun GroupsScreen(
                         )
                     },
                     navigationIcon = {
-                        if (isSelectionMode || query.isNotBlank()) {
+                        if (isSelectionMode || showSearchField) {
                             IconButton(
                                 onClick = {
                                     if (isSelectionMode) {
                                         viewModel.clearSelection()
                                     } else {
+                                        showSearchField = false
                                         viewModel.onQueryChange("")
                                     }
                                 }
@@ -209,18 +232,63 @@ fun GroupsScreen(
                                     }
                                 )
                             }
+                        } else if (!showSearchField) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
+                                IconButton(onClick = { showSearchField = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = stringResource(id = R.string.search)
+                                    )
+                                }
+                                Box {
+                                    IconButton(onClick = { showSettingsMenu = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = stringResource(id = R.string.settings)
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showSettingsMenu,
+                                        onDismissRequest = { showSettingsMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.export_all)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.FileDownload, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showSettingsMenu = false
+                                                onExportAllCsv()
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.import_csv)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.FileUpload, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showSettingsMenu = false
+                                                onImportCsv()
+                                            }
+                                        )
+                                    }
+                                }
+                            }
                         }
                     },
                     colors = AppBarStyles.defaultColors()
                 )
 
-                SearchIsland(
-                    query = query,
-                    onQueryChange = {
-                        if (isSelectionMode) viewModel.clearSelection()
-                        viewModel.onQueryChange(it)
-                    }
-                )
+                if (showSearchField) {
+                    SearchIsland(
+                        query = query,
+                        onQueryChange = {
+                            if (isSelectionMode) viewModel.clearSelection()
+                            viewModel.onQueryChange(it)
+                        },
+                        focusRequester = searchFocusRequester
+                    )
+                }
             }
         },
         floatingActionButton = {
@@ -275,6 +343,7 @@ fun GroupsScreen(
                 hasCustomDateTime = draft.hasCustomDateTime,
                 onTextChange = eventDraftViewModel::updateText,
                 onPickDateTime = openDateTimePicker,
+                onClearDateTime = eventDraftViewModel::clearDateTime,
                 onSend = {
                     if (draft.text.isNotBlank()) {
                         eventDraftViewModel.setSourceGroupId(null)
@@ -396,7 +465,8 @@ private fun GroupHeaderAction(
 @Composable
 private fun SearchIsland(
     query: String,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit,
+    focusRequester: FocusRequester
 ) {
     Surface(
         modifier = Modifier
@@ -408,7 +478,7 @@ private fun SearchIsland(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 15.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -425,7 +495,9 @@ private fun SearchIsland(
                     color = MaterialTheme.colorScheme.onSurface
                 ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
                 decorationBox = { innerTextField ->
                     if (query.isBlank()) {
                         Text(
@@ -450,24 +522,36 @@ private fun LazyListScope.searchContent(
             SearchSectionHeader(text = stringResource(id = R.string.groups_label))
         }
         items(items = results.groups, key = { "group_${it.id}" }) { group ->
-            SearchResultRow(
-                title = group.name,
-                subtitle = stringResource(id = R.string.matched_in_group_name),
+            GroupItem(
+                summary = com.dimento.app.domain.model.GroupSummary(
+                    groupId = group.id,
+                    name = group.name,
+                    description = group.description,
+                    lastMessage = null,
+                    lastEventDateMillis = null,
+                    hasFutureEvents = false,
+                    icon = group.icon
+                ),
                 onClick = { onOpenGroup(group.id) }
             )
         }
     }
 
     if (results.matchedEvents.isNotEmpty()) {
-        item("events_header") {
-            SearchSectionHeader(text = stringResource(id = R.string.events_label))
-        }
-        items(items = results.matchedEvents, key = { "event_${it.event.id}" }) { result ->
-            SearchResultRow(
-                title = result.groupName,
-                subtitle = result.event.text,
-                onClick = { onOpenGroup(result.event.groupId) }
-            )
+        val nowMillis = System.currentTimeMillis()
+        val grouped = results.matchedEvents.groupBy { it.groupName }
+        grouped.forEach { (groupName, events) ->
+            item("events_header_$groupName") {
+                SearchSectionHeader(text = groupName)
+            }
+            items(items = events, key = { "event_${it.event.id}" }) { result ->
+                val type = com.dimento.app.domain.util.EventTypeResolver().resolve(result.event.eventDateMillis, nowMillis)
+                EventBubble(
+                    event = result.event,
+                    type = type,
+                    onClick = { onOpenGroup(result.event.groupId) }
+                )
+            }
         }
     }
 
@@ -511,7 +595,7 @@ private fun SearchResultRow(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(text = title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,

@@ -5,16 +5,22 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dimento.app.domain.model.EventType
 import com.dimento.app.domain.model.MemoryGroup
+import com.dimento.app.domain.model.MemoryEvent
 import com.dimento.app.domain.usecase.CreateEventUseCase
 import com.dimento.app.domain.usecase.DeleteEventUseCase
 import com.dimento.app.domain.usecase.ForwardEventUseCase
 import com.dimento.app.domain.usecase.GetGroupUseCase
-import com.dimento.app.domain.usecase.MarkEventCompleteUseCase
 import com.dimento.app.domain.usecase.ObserveGroupsUseCase
 import com.dimento.app.domain.usecase.ObserveTimelineUseCase
+import com.dimento.app.domain.usecase.SearchMemoriesUseCase
+import com.dimento.app.domain.usecase.UpdateEventUseCase
 import com.dimento.app.domain.util.EventTypeResolver
 import com.dimento.app.presentation.model.TimelineItem
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +29,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.dimento.app.domain.model.SearchResult
+
+data class OnScheduleNotification(
+    val eventId: Long,
+    val eventDateMillis: Long
+)
 
 class GroupTimelineViewModel(
     private val groupId: Long,
@@ -31,13 +43,25 @@ class GroupTimelineViewModel(
     getGroupUseCase: GetGroupUseCase,
     private val createEventUseCase: CreateEventUseCase,
     private val forwardEventUseCase: ForwardEventUseCase,
-    private val markEventCompleteUseCase: MarkEventCompleteUseCase,
     private val deleteEventUseCase: DeleteEventUseCase,
+    private val updateEventUseCase: UpdateEventUseCase,
+    private val searchMemoriesUseCase: SearchMemoriesUseCase,
     private val eventTypeResolver: EventTypeResolver
 ) : ViewModel() {
     private val nowTicker = MutableStateFlow(System.currentTimeMillis())
     private val _message = MutableStateFlow<String?>(null)
     val message = _message.asStateFlow()
+
+    private val _selectedEventIds = MutableStateFlow<Set<Long>>(emptySet())
+    val selectedEventIds: StateFlow<Set<Long>> = _selectedEventIds.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _searchResults = MutableStateFlow(SearchResult(emptyList(), emptyList()))
+    val searchResults: StateFlow<SearchResult> = _searchResults.asStateFlow()
+
+    private var searchJob: Job? = null
 
     val group: StateFlow<MemoryGroup?> = observeGroupsUseCase().map { groups ->
         groups.find { it.id == groupId }
@@ -82,21 +106,26 @@ class GroupTimelineViewModel(
                     eventDateMillis = eventDateMillis,
                     recordedDateMillis = System.currentTimeMillis()
                 )
+            }.onSuccess { createResult ->
+                if (createResult.eventType == EventType.FUTURE) {
+                    _onScheduleNotification.tryEmit(OnScheduleNotification(createResult.eventId, eventDateMillis))
+                }
             }.onFailure { _message.value = it.message }
         }
     }
 
-    fun markComplete(eventId: Long) {
-        viewModelScope.launch {
-            markEventCompleteUseCase(eventId, System.currentTimeMillis())
-        }
-    }
+    private val _onScheduleNotification = MutableSharedFlow<OnScheduleNotification>(extraBufferCapacity = 1)
+    val onScheduleNotification: SharedFlow<OnScheduleNotification> = _onScheduleNotification.asSharedFlow()
 
     fun delete(eventId: Long) {
         viewModelScope.launch {
             deleteEventUseCase(eventId)
+            _onCancelNotification.tryEmit(eventId)
         }
     }
+
+    private val _onCancelNotification = MutableSharedFlow<Long>(extraBufferCapacity = 1)
+    val onCancelNotification: SharedFlow<Long> = _onCancelNotification.asSharedFlow()
 
     fun forward(eventId: Long, destinationGroupId: Long) {
         viewModelScope.launch {
@@ -108,8 +137,60 @@ class GroupTimelineViewModel(
         }
     }
 
+    fun updateEvent(eventId: Long, text: String, eventDateMillis: Long) {
+        viewModelScope.launch {
+            runCatching {
+                updateEventUseCase(eventId, text, eventDateMillis, voicePath = null)
+            }.onFailure {
+                _message.value = it.message
+            }
+        }
+    }
+
+    // --- Selection ---
+
+    fun toggleSelection(eventId: Long) {
+        val current = _selectedEventIds.value
+        _selectedEventIds.value = if (eventId in current) {
+            current - eventId
+        } else {
+            current + eventId
+        }
+    }
+
+    fun clearSelection() {
+        _selectedEventIds.value = emptySet()
+    }
+
+    fun enterSelectionMode(eventId: Long) {
+        _selectedEventIds.value = setOf(eventId)
+    }
+
+    fun deleteSelectedEvents() {
+        val ids = _selectedEventIds.value.toList()
+        if (ids.isEmpty()) return
+        clearSelection()
+        viewModelScope.launch {
+            ids.forEach { id ->
+                runCatching { deleteEventUseCase(id) }
+                _onCancelNotification.tryEmit(id)
+            }
+        }
+    }
+
     fun consumeMessage() {
         _message.value = null
+    }
+
+    // --- Search ---
+
+    fun onSearchQueryChange(value: String) {
+        _searchQuery.value = value
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(180)
+            _searchResults.value = searchMemoriesUseCase(value, groupId)
+        }
     }
 
     class Factory(
@@ -119,8 +200,9 @@ class GroupTimelineViewModel(
         private val getGroupUseCase: GetGroupUseCase,
         private val createEventUseCase: CreateEventUseCase,
         private val forwardEventUseCase: ForwardEventUseCase,
-        private val markEventCompleteUseCase: MarkEventCompleteUseCase,
         private val deleteEventUseCase: DeleteEventUseCase,
+        private val updateEventUseCase: UpdateEventUseCase,
+        private val searchMemoriesUseCase: SearchMemoriesUseCase,
         private val eventTypeResolver: EventTypeResolver
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
@@ -132,8 +214,9 @@ class GroupTimelineViewModel(
                 getGroupUseCase = getGroupUseCase,
                 createEventUseCase = createEventUseCase,
                 forwardEventUseCase = forwardEventUseCase,
-                markEventCompleteUseCase = markEventCompleteUseCase,
                 deleteEventUseCase = deleteEventUseCase,
+                updateEventUseCase = updateEventUseCase,
+                searchMemoriesUseCase = searchMemoriesUseCase,
                 eventTypeResolver = eventTypeResolver
             ) as T
         }

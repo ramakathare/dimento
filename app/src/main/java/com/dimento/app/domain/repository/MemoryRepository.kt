@@ -11,6 +11,7 @@ interface MemoryRepository {
     fun observeGroups(): Flow<List<MemoryGroup>>
     fun observeEventsByGroup(groupId: Long): Flow<List<MemoryEvent>>
     suspend fun getGroup(groupId: Long): MemoryGroup?
+    suspend fun getEvent(eventId: Long): MemoryEvent?
     suspend fun createGroup(name: String, icon: String?, description: String?): Long
     suspend fun renameGroup(groupId: Long, name: String, icon: String?, description: String?)
     suspend fun deleteGroup(groupId: Long)
@@ -20,7 +21,8 @@ interface MemoryRepository {
         text: String,
         eventDateMillis: Long,
         recordedDateMillis: Long,
-        voicePath: String?
+        voicePath: String?,
+        completedDateMillis: Long? = null
     ): Long
 
     suspend fun updateEvent(
@@ -38,4 +40,5 @@ interface MemoryRepository {
     suspend fun getEventsWithGroupName(groupId: Long): List<Pair<MemoryEvent, String>>
     suspend fun getEventsDueToday(startOfDayMillis: Long, endOfDayMillis: Long): List<MemoryEvent>
     suspend fun ensureDefaultGroup()
+    suspend fun wipeAllData()
 }

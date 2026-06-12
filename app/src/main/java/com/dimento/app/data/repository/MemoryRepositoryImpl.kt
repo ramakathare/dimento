@@ -38,6 +38,8 @@ class MemoryRepositoryImpl(
 
     override suspend fun getGroup(groupId: Long): MemoryGroup? = groupDao.getById(groupId)?.toDomain()
 
+    override suspend fun getEvent(eventId: Long): MemoryEvent? = eventDao.getById(eventId)?.toDomain()
+
     override suspend fun createGroup(name: String, icon: String?, description: String?): Long {
         return groupDao.insert(
             MemoryGroupEntity(
@@ -64,7 +66,8 @@ class MemoryRepositoryImpl(
         text: String,
         eventDateMillis: Long,
         recordedDateMillis: Long,
-        voicePath: String?
+        voicePath: String?,
+        completedDateMillis: Long?
     ): Long {
         return database.withTransaction {
             val eventId = eventDao.insert(
@@ -73,7 +76,7 @@ class MemoryRepositoryImpl(
                     text = text,
                     eventDateMillis = eventDateMillis,
                     recordedDateMillis = recordedDateMillis,
-                    completedDateMillis = null,
+                    completedDateMillis = completedDateMillis,
                     voicePath = voicePath
                 )
             )
@@ -167,6 +170,14 @@ class MemoryRepositoryImpl(
                     createdAtMillis = System.currentTimeMillis()
                 )
             )
+        }
+    }
+
+    override suspend fun wipeAllData() {
+        database.withTransaction {
+            reverseIndexDao.clearAll()
+            eventDao.deleteAll()
+            groupDao.deleteAll()
         }
     }
 
