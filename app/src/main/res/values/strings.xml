@@ -53,6 +53,11 @@
     <string name="export_failed">Export failed.</string>
     <string name="export_success">Group CSV exported to Downloads</string>
     <string name="undo">Undo</string>
+    <string name="attach">Attach</string>
+    <string name="attach_gallery">Gallery</string>
+    <string name="attach_location">Location</string>
+    <string name="attach_contact">Contact</string>
+    <string name="attach_document">Document</string>
     <string name="groups_deleted">%1$d groups deleted</string>
     <string name="group_deleted">Group deleted</string>
 </resources>
