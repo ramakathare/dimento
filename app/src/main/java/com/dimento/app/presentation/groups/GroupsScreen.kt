@@ -65,6 +65,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -119,6 +121,13 @@ fun GroupsScreen(
     } else null
 
     var showSearchField by remember { mutableStateOf(false) }
+    val searchFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(showSearchField) {
+        if (showSearchField) {
+            searchFocusRequester.requestFocus()
+        }
+    }
 
     val undoLabel = stringResource(R.string.undo)
 
@@ -232,7 +241,8 @@ fun GroupsScreen(
                         onQueryChange = {
                             if (isSelectionMode) viewModel.clearSelection()
                             viewModel.onQueryChange(it)
-                        }
+                        },
+                        focusRequester = searchFocusRequester
                     )
                 }
             }
@@ -411,7 +421,8 @@ private fun GroupHeaderAction(
 @Composable
 private fun SearchIsland(
     query: String,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit,
+    focusRequester: FocusRequester
 ) {
     Surface(
         modifier = Modifier
@@ -440,7 +451,9 @@ private fun SearchIsland(
                     color = MaterialTheme.colorScheme.onSurface
                 ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
                 decorationBox = { innerTextField ->
                     if (query.isBlank()) {
                         Text(
