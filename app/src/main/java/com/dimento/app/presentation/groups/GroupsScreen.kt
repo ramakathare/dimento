@@ -82,6 +82,8 @@ import com.dimento.app.R
 import com.dimento.app.core.ImageStore
 import com.dimento.app.core.ValidationConstants
 import com.dimento.app.domain.model.SearchResult
+import com.dimento.app.presentation.components.DateHeader
+import com.dimento.app.presentation.components.EventBubble
 import com.dimento.app.presentation.components.EventComposerBar
 import com.dimento.app.presentation.components.GroupIconView
 import com.dimento.app.presentation.components.GroupItem
@@ -478,24 +480,36 @@ private fun LazyListScope.searchContent(
             SearchSectionHeader(text = stringResource(id = R.string.groups_label))
         }
         items(items = results.groups, key = { "group_${it.id}" }) { group ->
-            SearchResultRow(
-                title = group.name,
-                subtitle = stringResource(id = R.string.matched_in_group_name),
+            GroupItem(
+                summary = com.dimento.app.domain.model.GroupSummary(
+                    groupId = group.id,
+                    name = group.name,
+                    description = group.description,
+                    lastMessage = null,
+                    lastEventDateMillis = null,
+                    hasFutureEvents = false,
+                    icon = group.icon
+                ),
                 onClick = { onOpenGroup(group.id) }
             )
         }
     }
 
     if (results.matchedEvents.isNotEmpty()) {
-        item("events_header") {
-            SearchSectionHeader(text = stringResource(id = R.string.events_label))
-        }
-        items(items = results.matchedEvents, key = { "event_${it.event.id}" }) { result ->
-            SearchResultRow(
-                title = result.groupName,
-                subtitle = result.event.text,
-                onClick = { onOpenGroup(result.event.groupId) }
-            )
+        val nowMillis = System.currentTimeMillis()
+        val grouped = results.matchedEvents.groupBy { it.groupName }
+        grouped.forEach { (groupName, events) ->
+            item("events_header_$groupName") {
+                SearchSectionHeader(text = groupName)
+            }
+            items(items = events, key = { "event_${it.event.id}" }) { result ->
+                val type = com.dimento.app.domain.util.EventTypeResolver().resolve(result.event.eventDateMillis, nowMillis)
+                EventBubble(
+                    event = result.event,
+                    type = type,
+                    onClick = { onOpenGroup(result.event.groupId) }
+                )
+            }
         }
     }
 

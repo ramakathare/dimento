@@ -5,7 +5,6 @@ import android.app.TimePickerDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,7 +52,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dimento.app.R
@@ -454,10 +452,12 @@ private fun androidx.compose.foundation.lazy.LazyListScope.searchContent(
     results: SearchResult
 ) {
     if (results.matchedEvents.isNotEmpty()) {
+        val nowMillis = System.currentTimeMillis()
         items(items = results.matchedEvents, key = { "event_${it.event.id}" }) { result ->
-            SearchResultRow(
-                title = result.groupName,
-                subtitle = result.event.text,
+            val type = com.dimento.app.domain.util.EventTypeResolver().resolve(result.event.eventDateMillis, nowMillis)
+            EventBubble(
+                event = result.event,
+                type = type,
                 onClick = { }
             )
         }
@@ -471,35 +471,6 @@ private fun androidx.compose.foundation.lazy.LazyListScope.searchContent(
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 24.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun SearchResultRow(
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
             )
         }
     }
