@@ -90,13 +90,13 @@ fun EventBubble(
             ) {
                 Text(
                     text = DateFormats.eventDateOnlyMillis(event.eventDateMillis),
-                    color = textColor.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                     style = MaterialTheme.typography.labelSmall,
                     maxLines = 1
                 )
                 Text(
                     text = DateFormats.eventTimeOnlyMillis(event.eventDateMillis),
-                    color = textColor.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     style = MaterialTheme.typography.labelSmall,
                     maxLines = 1
                 )

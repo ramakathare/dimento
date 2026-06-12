@@ -91,7 +91,7 @@ fun EventComposerBar(
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Main input row — text field + gear + send
+            // Main input row — text field + gear (send button is outside the box)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -117,12 +117,10 @@ fun EventComposerBar(
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     keyboardActions = KeyboardActions(
                         onSend = {
-                            if (text.isNotBlank()) {
-                                onSend()
-                            }
+                            // Enter on keyboard adds newline, does not send
                         }
                     ),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardOptions = KeyboardOptions.Default,
                     decorationBox = { innerTextField ->
                         Box(
                             modifier = Modifier
@@ -144,7 +142,7 @@ fun EventComposerBar(
                     }
                 )
 
-                // Settings gear icon (right side, before send)
+                // Settings gear icon
                 IconButton(
                     onClick = { showSettingsPanel = !showSettingsPanel },
                     modifier = Modifier.size(40.dp)
@@ -156,8 +154,13 @@ fun EventComposerBar(
                                else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
 
-                // Send button
+            // Send button row — outside the text box, aligned to the right
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
                 IconButton(
                     onClick = {
                         if (text.isNotBlank()) {
