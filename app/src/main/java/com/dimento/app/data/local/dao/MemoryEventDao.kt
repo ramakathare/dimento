@@ -50,4 +50,7 @@ interface MemoryEventDao {
         """
     )
     suspend fun getDueToday(startOfDayMillis: Long, endOfDayMillis: Long): List<MemoryEventEntity>
+
+    @Query("DELETE FROM memory_events")
+    suspend fun deleteAll()
 }

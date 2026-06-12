@@ -39,7 +39,11 @@ import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -100,7 +104,9 @@ fun GroupsScreen(
     eventDraftViewModel: CreateEventSharedViewModel,
     onOpenGroup: (Long) -> Unit,
     onCreateEventRequested: () -> Unit,
-    onExportGroupCsv: (Long) -> Unit
+    onExportGroupCsv: (Long) -> Unit,
+    onExportAllCsv: () -> Unit,
+    onImportCsv: () -> Unit
 ) {
     val groups by viewModel.groups.collectAsState()
     val query by viewModel.query.collectAsState()
@@ -116,6 +122,7 @@ fun GroupsScreen(
     var groupName by remember { mutableStateOf("") }
     var groupIcon by remember { mutableStateOf<String?>(null) }
     var groupDescription by remember { mutableStateOf<String?>(null) }
+    var showSettingsMenu by remember { mutableStateOf(false) }
     
     val isSelectionMode = selectedGroupIds.isNotEmpty()
     val selectedGroup = if (selectedGroupIds.size == 1) {
@@ -226,11 +233,46 @@ fun GroupsScreen(
                                 )
                             }
                         } else if (!showSearchField) {
-                            IconButton(onClick = { showSearchField = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = stringResource(id = R.string.search)
-                                )
+                            Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
+                                IconButton(onClick = { showSearchField = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = stringResource(id = R.string.search)
+                                    )
+                                }
+                                Box {
+                                    IconButton(onClick = { showSettingsMenu = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = stringResource(id = R.string.settings)
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showSettingsMenu,
+                                        onDismissRequest = { showSettingsMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.export_all)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.FileDownload, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showSettingsMenu = false
+                                                onExportAllCsv()
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.import_csv)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.FileUpload, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showSettingsMenu = false
+                                                onImportCsv()
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     },

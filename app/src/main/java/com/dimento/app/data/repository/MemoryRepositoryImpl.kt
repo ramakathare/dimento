@@ -173,6 +173,14 @@ class MemoryRepositoryImpl(
         }
     }
 
+    override suspend fun wipeAllData() {
+        database.withTransaction {
+            reverseIndexDao.clearAll()
+            eventDao.deleteAll()
+            groupDao.deleteAll()
+        }
+    }
+
     private suspend fun rebuildReverseIndexForEvent(eventId: Long) {
         reverseIndexDao.deleteForEvent(eventId)
         val event = eventDao.getById(eventId) ?: return

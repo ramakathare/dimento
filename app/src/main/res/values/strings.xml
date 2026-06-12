@@ -52,6 +52,10 @@
     <string name="forward_event">Forward event</string>
     <string name="export_failed">Export failed.</string>
     <string name="export_success">Group CSV exported to Downloads</string>
+    <string name="export_all">Export All Events</string>
+    <string name="import_csv">Import Events from CSV</string>
+    <string name="import_success">Events imported successfully. All existing data has been replaced.</string>
+    <string name="import_failed">Import failed</string>
     <string name="undo">Undo</string>
     <string name="attach">Attach</string>
     <string name="settings">Settings</string>

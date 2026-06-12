@@ -60,4 +60,7 @@ interface MemoryGroupDao {
         """
     )
     fun observeGroupSummaries(nowMillis: Long): Flow<List<GroupSummaryRow>>
+
+    @Query("DELETE FROM memory_groups")
+    suspend fun deleteAll()
 }

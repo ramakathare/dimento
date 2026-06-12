@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -149,6 +150,28 @@ private fun DiMentoAppContent() {
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
 
+    val csvImportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: android.net.Uri? ->
+        if (uri != null) {
+            scope.launch {
+                runCatching {
+                    val csvImporter = com.dimento.app.core.CsvImporter(context)
+                    val csvContent = csvImporter.readCsvContent(uri)
+                    container.importEventsCsvUseCase(csvContent)
+                }.onSuccess {
+                    Toast.makeText(context, context.getString(R.string.import_success), Toast.LENGTH_LONG).show()
+                }.onFailure { error ->
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.import_failed) + ": " + error.message,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
     val groupsViewModel: GroupsViewModel = viewModel(
         factory = simpleFactory {
             GroupsViewModel(
@@ -197,6 +220,25 @@ private fun DiMentoAppContent() {
                                 Toast.makeText(context, it.message ?: context.getString(R.string.export_failed), Toast.LENGTH_SHORT).show()
                             }
                         }
+                    },
+                    onExportAllCsv = {
+                        scope.launch {
+                            runCatching {
+                                val export = container.exportEventsCsvUseCase(
+                                    nowMillis = System.currentTimeMillis()
+                                )
+                                checkNotNull(CsvExporter(context).export(export.fileName, export.content)) {
+                                    context.getString(R.string.export_failed)
+                                }
+                            }.onSuccess {
+                                Toast.makeText(context, context.getString(R.string.export_success), Toast.LENGTH_SHORT).show()
+                            }.onFailure {
+                                Toast.makeText(context, it.message ?: context.getString(R.string.export_failed), Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    onImportCsv = {
+                        csvImportLauncher.launch("text/*")
                     }
                 )
             }

@@ -16,6 +16,7 @@ import com.dimento.app.domain.usecase.ExportGroupEventsCsvUseCase
 import com.dimento.app.domain.usecase.ForwardEventUseCase
 import com.dimento.app.domain.usecase.GetEventsDueTodayUseCase
 import com.dimento.app.domain.usecase.GetGroupUseCase
+import com.dimento.app.domain.usecase.ImportEventsCsvUseCase
 import com.dimento.app.domain.usecase.MarkEventCompleteUseCase
 import com.dimento.app.domain.usecase.ObserveGroupSummariesUseCase
 import com.dimento.app.domain.usecase.ObserveGroupsUseCase
@@ -58,4 +59,5 @@ class AppContainer(context: Context) {
     val getEventsDueTodayUseCase = GetEventsDueTodayUseCase(repository, eventTypeResolver)
     val exportEventsCsvUseCase = ExportEventsCsvUseCase(repository, eventTypeResolver)
     val exportGroupEventsCsvUseCase = ExportGroupEventsCsvUseCase(repository, eventTypeResolver)
+    val importEventsCsvUseCase = ImportEventsCsvUseCase(repository)
 }

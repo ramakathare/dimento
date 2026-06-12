@@ -40,4 +40,5 @@ interface MemoryRepository {
     suspend fun getEventsWithGroupName(groupId: Long): List<Pair<MemoryEvent, String>>
     suspend fun getEventsDueToday(startOfDayMillis: Long, endOfDayMillis: Long): List<MemoryEvent>
     suspend fun ensureDefaultGroup()
+    suspend fun wipeAllData()
 }
