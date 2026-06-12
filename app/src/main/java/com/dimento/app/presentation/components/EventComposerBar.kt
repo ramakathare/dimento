@@ -84,124 +84,110 @@ fun EventComposerBar(
         tonalElevation = 6.dp,
         shadowElevation = 8.dp
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
                 .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalAlignment = Alignment.Bottom
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top
+            // Left: text box + settings panel
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Left column: settings panel (if open) + text box
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                // Text box with gear at bottom-right
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .padding(start = 4.dp, end = 4.dp),
+                    verticalAlignment = Alignment.Bottom
                 ) {
-                    // Settings panel: date + attach options
-                    AnimatedVisibility(
-                        visible = showSettingsPanel,
-                        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-                        exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
-                    ) {
-                        SettingsPanel(
-                            selectedDateMillis = selectedDateMillis,
-                            hasCustomDateTime = hasCustomDateTime,
-                            onPickDateTime = onPickDateTime,
-                            onClearDateTime = onClearDateTime,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-
-                    // Text box with gear inside
-                    Row(
+                    BasicTextField(
+                        value = text,
+                        onValueChange = { onTextChange(it.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH)) },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                shape = RoundedCornerShape(24.dp)
-                            )
-                            .padding(start = 4.dp, end = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        BasicTextField(
-                            value = text,
-                            onValueChange = { onTextChange(it.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH)) },
-                            modifier = Modifier
-                                .weight(1f)
-                                .focusRequester(focusRequester),
-                            minLines = 1,
-                            maxLines = 6,
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            keyboardActions = KeyboardActions(
-                                onSend = {
-                                    // Enter on keyboard adds newline, does not send
+                            .weight(1f)
+                            .focusRequester(focusRequester),
+                        minLines = 1,
+                        maxLines = 6,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        keyboardActions = KeyboardActions(
+                            onSend = { /* Enter adds newline, does not send */ }
+                        ),
+                        keyboardOptions = KeyboardOptions.Default,
+                        decorationBox = { innerTextField ->
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                if (text.isBlank()) {
+                                    Text(
+                                        text = stringResource(id = R.string.write_memory_placeholder),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    )
                                 }
-                            ),
-                            keyboardOptions = KeyboardOptions.Default,
-                            decorationBox = { innerTextField ->
-                                Box(modifier = Modifier.fillMaxWidth()) {
-                                    if (text.isBlank()) {
-                                        Text(
-                                            text = stringResource(id = R.string.write_memory_placeholder),
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                                        )
-                                    }
-                                    innerTextField()
-                                }
+                                innerTextField()
                             }
-                        )
-
-                        // Settings gear icon inside the text box
-                        IconButton(
-                            onClick = { showSettingsPanel = !showSettingsPanel },
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = stringResource(id = R.string.settings),
-                                tint = if (showSettingsPanel) MaterialTheme.colorScheme.primary
-                                       else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
                         }
-                    }
-                }
+                    )
 
-                // Send button — to the right, bottom-aligned
-                Column(
-                    modifier = Modifier.padding(start = 4.dp),
-                    verticalArrangement = Arrangement.Bottom
-                ) {
+                    // Gear icon — bottom-right inside text box
                     IconButton(
-                        onClick = {
-                            if (text.isNotBlank()) {
-                                onSend()
-                            }
-                        },
-                        enabled = text.isNotBlank(),
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                color = if (text.isNotBlank()) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                shape = CircleShape
-                            )
+                        onClick = { showSettingsPanel = !showSettingsPanel },
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = stringResource(id = R.string.send_event),
-                            tint = if (text.isNotBlank()) MaterialTheme.colorScheme.onPrimary
-                                   else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = stringResource(id = R.string.settings),
+                            tint = if (showSettingsPanel) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
+
+                // Settings panel below text box
+                AnimatedVisibility(
+                    visible = showSettingsPanel,
+                    enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                    exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
+                ) {
+                    SettingsPanel(
+                        selectedDateMillis = selectedDateMillis,
+                        hasCustomDateTime = hasCustomDateTime,
+                        onPickDateTime = onPickDateTime,
+                        onClearDateTime = onClearDateTime
+                    )
+                }
+            }
+
+            // Right: send button, bottom-aligned
+            IconButton(
+                onClick = {
+                    if (text.isNotBlank()) onSend()
+                },
+                enabled = text.isNotBlank(),
+                modifier = Modifier
+                    .padding(start = 4.dp)
+                    .size(40.dp)
+                    .background(
+                        color = if (text.isNotBlank()) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        shape = CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = stringResource(id = R.string.send_event),
+                    tint = if (text.isNotBlank()) MaterialTheme.colorScheme.onPrimary
+                           else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }
@@ -212,11 +198,10 @@ private fun SettingsPanel(
     selectedDateMillis: Long,
     hasCustomDateTime: Boolean,
     onPickDateTime: () -> Unit,
-    onClearDateTime: () -> Unit,
-    modifier: Modifier = Modifier
+    onClearDateTime: () -> Unit
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Left: date picker pill or selected date row
