@@ -107,10 +107,10 @@ fun GroupTimelineScreen(
     }
 
     // Focus the composer text field when editing starts
+    val composerFocusRequester = remember { FocusRequester() }
     LaunchedEffect(editingEvent) {
         if (editingEvent != null) {
-            // Small delay to ensure the composer is rendered
-            kotlinx.coroutines.delay(100)
+            composerFocusRequester.requestFocus()
             val focusedView = (context as? androidx.activity.ComponentActivity)?.currentFocus
             if (focusedView != null) {
                 val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
@@ -343,6 +343,7 @@ fun GroupTimelineScreen(
                         quickEventDateMillis = System.currentTimeMillis()
                         quickEventHasCustomDateTime = false
                     },
+                    focusRequester = composerFocusRequester,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

@@ -69,10 +69,10 @@ fun EventComposerBar(
     onClearDateTime: () -> Unit,
     onSend: () -> Unit,
     onCancelEdit: (() -> Unit)? = null,
+    focusRequester: FocusRequester = remember { FocusRequester() },
     modifier: Modifier = Modifier
 ) {
-    val focusRequester = remember { FocusRequester() }
-    var showSettingsPanel by remember { mutableStateOf(isEditing) }
+    var showSettingsPanel by remember(isEditing) { mutableStateOf(isEditing) }
 
     Surface(
         modifier = modifier
