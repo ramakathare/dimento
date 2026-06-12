@@ -209,14 +209,16 @@ private fun SettingsPanel(
     onClearDateTime: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        // Date row — split into two lines when selected
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Left: date picker pill or selected date row
         if (hasCustomDateTime) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
                     .clickable(onClick = onPickDateTime)
                     .padding(vertical = 2.dp)
             ) {
@@ -231,13 +233,11 @@ private fun SettingsPanel(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.width(2.dp))
                 Text(
                     text = DateFormats.eventTimeOnlyMillis(selectedDateMillis),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = stringResource(id = R.string.clear_date_time),
@@ -247,76 +247,62 @@ private fun SettingsPanel(
                         .clickable(onClick = onClearDateTime)
                 )
             }
-        }
-
-        // Attach options row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (!hasCustomDateTime) {
-                AttachmentOption(
-                    icon = Icons.Default.DateRange,
-                    label = stringResource(id = R.string.pick_date_time),
-                    onClick = onPickDateTime
+        } else {
+            IconButton(
+                onClick = onPickDateTime,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = stringResource(id = R.string.pick_date_time),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            AttachmentOption(
-                icon = Icons.Default.Image,
-                label = stringResource(id = R.string.attach_gallery),
-                onClick = { /* placeholder */ }
-            )
-            AttachmentOption(
-                icon = Icons.Default.LocationOn,
-                label = stringResource(id = R.string.attach_location),
-                onClick = { /* placeholder */ }
-            )
-            AttachmentOption(
-                icon = Icons.Default.Person,
-                label = stringResource(id = R.string.attach_contact),
-                onClick = { /* placeholder */ }
-            )
-            AttachmentOption(
-                icon = Icons.Default.DocumentScanner,
-                label = stringResource(id = R.string.attach_document),
-                onClick = { /* placeholder */ }
-            )
         }
-    }
-}
 
-@Composable
-private fun AttachmentOption(
-    icon: ImageVector,
-    label: String,
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable(onClick = onClick)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), CircleShape),
-            contentAlignment = Alignment.Center
+        // Spacer pushes attach icons to the right
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Right: attach icons without labels
+        IconButton(
+            onClick = { /* placeholder */ },
+            modifier = Modifier.size(40.dp)
         ) {
             Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(24.dp)
+                imageVector = Icons.Default.Image,
+                contentDescription = stringResource(id = R.string.attach_gallery),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.width(48.dp),
-            softWrap = false
-        )
+        IconButton(
+            onClick = { /* placeholder */ },
+            modifier = Modifier.size(40.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = stringResource(id = R.string.attach_location),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        IconButton(
+            onClick = { /* placeholder */ },
+            modifier = Modifier.size(40.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = stringResource(id = R.string.attach_contact),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        IconButton(
+            onClick = { /* placeholder */ },
+            modifier = Modifier.size(40.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.DocumentScanner,
+                contentDescription = stringResource(id = R.string.attach_document),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
