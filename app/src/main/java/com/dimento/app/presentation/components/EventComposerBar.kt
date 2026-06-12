@@ -91,22 +91,7 @@ fun EventComposerBar(
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Settings panel: date + attach options (below the text box)
-            AnimatedVisibility(
-                visible = showSettingsPanel,
-                enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-                exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
-            ) {
-                SettingsPanel(
-                    selectedDateMillis = selectedDateMillis,
-                    hasCustomDateTime = hasCustomDateTime,
-                    onPickDateTime = onPickDateTime,
-                    onClearDateTime = onClearDateTime,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-            }
-
-            // Main input row — only gear + text field + send
+            // Main input row — text field + gear + send
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -117,19 +102,6 @@ fun EventComposerBar(
                     .padding(start = 4.dp, end = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Settings gear icon
-                IconButton(
-                    onClick = { showSettingsPanel = !showSettingsPanel },
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = stringResource(id = R.string.settings),
-                        tint = if (showSettingsPanel) MaterialTheme.colorScheme.primary
-                               else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
                 // Text field
                 BasicTextField(
                     value = text,
@@ -172,6 +144,19 @@ fun EventComposerBar(
                     }
                 )
 
+                // Settings gear icon (right side, before send)
+                IconButton(
+                    onClick = { showSettingsPanel = !showSettingsPanel },
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(id = R.string.settings),
+                        tint = if (showSettingsPanel) MaterialTheme.colorScheme.primary
+                               else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
                 // Send button
                 IconButton(
                     onClick = {
@@ -197,6 +182,21 @@ fun EventComposerBar(
                     )
                 }
             }
+
+            // Settings panel: date + attach options (below the text box)
+            AnimatedVisibility(
+                visible = showSettingsPanel,
+                enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
+            ) {
+                SettingsPanel(
+                    selectedDateMillis = selectedDateMillis,
+                    hasCustomDateTime = hasCustomDateTime,
+                    onPickDateTime = onPickDateTime,
+                    onClearDateTime = onClearDateTime,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
         }
     }
 }
@@ -210,60 +210,58 @@ private fun SettingsPanel(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        // Date row
+        // Date row — split into two lines when selected
+        if (hasCustomDateTime) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onPickDateTime)
+                    .padding(vertical = 2.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = stringResource(id = R.string.pick_date_time),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = DateFormats.eventDateOnlyMillis(selectedDateMillis),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(2.dp))
+                Text(
+                    text = DateFormats.eventTimeOnlyMillis(selectedDateMillis),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(id = R.string.clear_date_time),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable(onClick = onClearDateTime)
+                )
+            }
+        }
+
+        // Attach options row
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) { /* prevent click-through */ },
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (hasCustomDateTime) {
-                // Selected date bubble — clickable to change, removable
-                Row(
-                    modifier = Modifier
-                        .clickable(onClick = onPickDateTime)
-                        .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(16.dp))
-                        .padding(start = 10.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = stringResource(id = R.string.pick_date_time),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = DateFormats.eventDateTimeMillis(selectedDateMillis),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(id = R.string.clear_date_time),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                        modifier = Modifier
-                            .size(18.dp)
-                            .clickable(onClick = onClearDateTime)
-                    )
-                }
-            } else {
-                // Date picker option
+            if (!hasCustomDateTime) {
                 AttachmentOption(
                     icon = Icons.Default.DateRange,
                     label = stringResource(id = R.string.pick_date_time),
                     onClick = onPickDateTime
                 )
             }
-
-            // Attach options
             AttachmentOption(
                 icon = Icons.Default.Image,
                 label = stringResource(id = R.string.attach_gallery),
