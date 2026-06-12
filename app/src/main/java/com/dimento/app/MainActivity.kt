@@ -1,8 +1,6 @@
 package com.dimento.app
 
 import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -38,7 +36,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,6 +46,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dimento.app.core.CsvExporter
+import com.dimento.app.core.PermissionManager
 import com.dimento.app.core.ServiceLocator
 import com.dimento.app.presentation.components.AppBackground
 import com.dimento.app.presentation.create.CreateEventSharedViewModel
@@ -65,12 +63,16 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { }
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        permissions.forEach { (permission, _) ->
+            PermissionManager.markAsked(this, permission)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        maybeAskNotificationPermission()
+        requestNeededPermissions()
         enableEdgeToEdge()
         setContent {
             DiMentoTheme {
@@ -79,13 +81,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun maybeAskNotificationPermission() {
-        if (Build.VERSION.SDK_INT < 33) return
-        val granted = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
-        if (!granted) permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    private fun requestNeededPermissions() {
+        val permissions = PermissionManager.getPermissionsToRequest(this)
+        if (permissions.isNotEmpty()) {
+            permissionLauncher.launch(permissions.toTypedArray())
+        }
     }
 }
 
