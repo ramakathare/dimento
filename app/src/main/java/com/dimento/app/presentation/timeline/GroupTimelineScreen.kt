@@ -284,8 +284,8 @@ fun GroupTimelineScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(inner),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 items(
                     items = items,
