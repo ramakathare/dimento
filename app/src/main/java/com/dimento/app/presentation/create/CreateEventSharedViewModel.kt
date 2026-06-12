@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dimento.app.domain.usecase.CreateEventUseCase
 import com.dimento.app.core.ServiceLocator
+import com.dimento.app.core.ValidationConstants
 import com.dimento.app.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 data class EventDraft(
     val text: String = "",
     val eventDateMillis: Long = System.currentTimeMillis(),
+    val hasCustomDateTime: Boolean = false,
     val voicePath: String? = null,
     val sourceGroupId: Long? = null
 )
@@ -27,11 +29,14 @@ class CreateEventSharedViewModel(
     val message: StateFlow<String?> = _message.asStateFlow()
 
     fun updateText(text: String) {
-        _draft.value = _draft.value.copy(text = text.take(200))
+        _draft.value = _draft.value.copy(text = text.take(ValidationConstants.MAX_EVENT_TEXT_LENGTH))
     }
 
     fun updateEventDateMillis(value: Long) {
-        _draft.value = _draft.value.copy(eventDateMillis = value)
+        _draft.value = _draft.value.copy(
+            eventDateMillis = value,
+            hasCustomDateTime = true
+        )
     }
 
     fun setSourceGroupId(groupId: Long?) {
@@ -46,11 +51,16 @@ class CreateEventSharedViewModel(
             return
         }
         viewModelScope.launch {
+            val eventDateMillis = if (snapshot.hasCustomDateTime) {
+                snapshot.eventDateMillis
+            } else {
+                System.currentTimeMillis()
+            }
             runCatching {
                 createEventUseCase(
                     groupId = groupId,
                     text = snapshot.text,
-                    eventDateMillis = snapshot.eventDateMillis,
+                    eventDateMillis = eventDateMillis,
                     recordedDateMillis = System.currentTimeMillis(),
                     voicePath = snapshot.voicePath
                 )

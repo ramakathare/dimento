@@ -18,6 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -38,8 +39,8 @@ class GroupTimelineViewModel(
     private val _message = MutableStateFlow<String?>(null)
     val message = _message.asStateFlow()
 
-    val group: StateFlow<MemoryGroup?> = kotlinx.coroutines.flow.flow {
-        emit(getGroupUseCase(groupId))
+    val group: StateFlow<MemoryGroup?> = observeGroupsUseCase().map { groups ->
+        groups.find { it.id == groupId }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val allGroups: StateFlow<List<MemoryGroup>> = observeGroupsUseCase()
@@ -71,16 +72,15 @@ class GroupTimelineViewModel(
         }
     }
 
-    fun addQuickEvent(text: String) {
+    fun addQuickEvent(text: String, eventDateMillis: Long = System.currentTimeMillis()) {
         if (text.isBlank()) return
         viewModelScope.launch {
             runCatching {
-                val now = System.currentTimeMillis()
                 createEventUseCase(
                     groupId = groupId,
                     text = text,
-                    eventDateMillis = now,
-                    recordedDateMillis = now
+                    eventDateMillis = eventDateMillis,
+                    recordedDateMillis = System.currentTimeMillis()
                 )
             }.onFailure { _message.value = it.message }
         }

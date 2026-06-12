@@ -1,15 +1,21 @@
 package com.dimento.app.core
 
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 object DateFormats {
-    private fun sdf(pattern: String) = SimpleDateFormat(pattern, Locale.getDefault())
+    private val zone: ZoneId = ZoneId.systemDefault()
+    private val shortDateFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMM")
+    private val eventDateTimeFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMM, hh:mm a")
+    private val fullDateTimeFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")
 
-    fun shortDateMillis(millis: Long): String = sdf("dd MMM").format(Date(millis))
+    fun shortDateMillis(millis: Long): String =
+        Instant.ofEpochMilli(millis).atZone(zone).format(shortDateFmt)
 
-    fun eventDateTimeMillis(millis: Long): String = sdf("dd MMM, hh:mm a").format(Date(millis))
+    fun eventDateTimeMillis(millis: Long): String =
+        Instant.ofEpochMilli(millis).atZone(zone).format(eventDateTimeFmt)
 
-    fun fullDateTimeMillis(millis: Long): String = sdf("dd MMM yyyy, hh:mm a").format(Date(millis))
+    fun fullDateTimeMillis(millis: Long): String =
+        Instant.ofEpochMilli(millis).atZone(zone).format(fullDateTimeFmt)
 }

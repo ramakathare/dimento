@@ -51,7 +51,6 @@ import androidx.navigation.navArgument
 import com.dimento.app.core.CsvExporter
 import com.dimento.app.core.ServiceLocator
 import com.dimento.app.presentation.components.AppBackground
-import com.dimento.app.presentation.create.CreateEventScreen
 import com.dimento.app.presentation.create.CreateEventSharedViewModel
 import com.dimento.app.presentation.create.SelectGroupScreen
 import com.dimento.app.presentation.groups.GroupsScreen
@@ -71,7 +70,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ServiceLocator.init(this)
         maybeAskNotificationPermission()
         enableEdgeToEdge()
         setContent {
@@ -179,9 +177,9 @@ private fun DiMentoAppContent() {
                 GroupsScreen(
                     viewModel = groupsViewModel,
                     onOpenGroup = { navController.navigate(DiMentoRoute.GroupTimeline.create(it)) },
-                    onCreateEventFromFab = {
-                        createEventSharedViewModel.setSourceGroupId(null)
-                        navController.navigate(DiMentoRoute.CreateEvent.create(groupId = null))
+                    eventDraftViewModel = createEventSharedViewModel,
+                    onCreateEventRequested = {
+                        navController.navigate(DiMentoRoute.SelectGroup.route)
                     },
                     onExportGroupCsv = { groupId ->
                         scope.launch {
@@ -224,33 +222,7 @@ private fun DiMentoAppContent() {
                 GroupTimelineScreen(
                     viewModel = timelineViewModel,
                     onBack = { navController.popBackStack() },
-                    onCreateInGroup = {
-                        createEventSharedViewModel.setSourceGroupId(it)
-                        navController.navigate(DiMentoRoute.CreateEvent.create(groupId = it))
-                    },
                     onSearchInGroup = { navController.navigate(DiMentoRoute.Search.create(groupId = it)) }
-                )
-            }
-
-            composable(
-                route = DiMentoRoute.CreateEvent.route,
-                arguments = listOf(navArgument("groupId") {
-                    type = NavType.LongType
-                    defaultValue = -1L
-                })
-            ) { entry ->
-                val arg = entry.arguments?.getLong("groupId") ?: -1L
-                val resolvedGroupId = arg.takeIf { it > 0 }
-                createEventSharedViewModel.setSourceGroupId(resolvedGroupId)
-                CreateEventScreen(
-                    viewModel = createEventSharedViewModel,
-                    onBack = { navController.popBackStack() },
-                    onNextSelectGroup = { navController.navigate(DiMentoRoute.SelectGroup.route) },
-                    onSaveDirectToGroup = { groupId ->
-                        createEventSharedViewModel.commit(groupId) {
-                            navController.popBackStack()
-                        }
-                    }
                 )
             }
 

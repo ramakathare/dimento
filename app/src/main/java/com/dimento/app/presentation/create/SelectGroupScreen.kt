@@ -27,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,7 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.dimento.app.R
 import com.dimento.app.domain.usecase.ObserveGroupsUseCase
-import com.dimento.app.presentation.groups.GroupIconView
+import com.dimento.app.presentation.components.GroupIconView
+import com.dimento.app.presentation.theme.AppBarStyles
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,13 +65,7 @@ fun SelectGroupScreen(
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                )
+                colors = AppBarStyles.defaultColors()
             )
         }
     ) { inner ->

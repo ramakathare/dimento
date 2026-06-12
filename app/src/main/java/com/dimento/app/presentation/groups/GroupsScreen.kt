@@ -1,5 +1,7 @@
 package com.dimento.app.presentation.groups
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,23 +35,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.DirectionsBike
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Apartment
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileDownload
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PrecisionManufacturing
-import androidx.compose.material.icons.filled.RealEstateAgent
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -63,7 +54,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -79,31 +69,33 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import coil.compose.AsyncImage
 import com.dimento.app.R
 import com.dimento.app.core.ImageStore
 import com.dimento.app.core.ValidationConstants
 import com.dimento.app.domain.model.SearchResult
+import com.dimento.app.presentation.components.EventComposerBar
+import com.dimento.app.presentation.components.GroupIconView
 import com.dimento.app.presentation.components.GroupItem
+import com.dimento.app.presentation.components.getVectorIconByName
+import com.dimento.app.presentation.create.CreateEventSharedViewModel
+import com.dimento.app.presentation.theme.AppBarStyles
 import com.dimento.app.presentation.theme.getSubtleSurfaceColor
-import java.io.File
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsScreen(
     viewModel: GroupsViewModel,
+    eventDraftViewModel: CreateEventSharedViewModel,
     onOpenGroup: (Long) -> Unit,
-    onCreateEventFromFab: () -> Unit,
+    onCreateEventRequested: () -> Unit,
     onExportGroupCsv: (Long) -> Unit
 ) {
     val groups by viewModel.groups.collectAsState()
@@ -111,6 +103,8 @@ fun GroupsScreen(
     val results by viewModel.results.collectAsState()
     val message by viewModel.message.collectAsState()
     val selectedGroupIds by viewModel.selectedGroupIds.collectAsState()
+    val draft by eventDraftViewModel.draft.collectAsState()
+    val context = LocalContext.current
     
     val snackbars = remember { SnackbarHostState() }
     var showCreateGroup by remember { mutableStateOf(false) }
@@ -217,13 +211,7 @@ fun GroupsScreen(
                             }
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                    )
+                    colors = AppBarStyles.defaultColors()
                 )
 
                 SearchIsland(
@@ -236,22 +224,67 @@ fun GroupsScreen(
             }
         },
         floatingActionButton = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                FloatingActionButton(
-                    onClick = {
-                        groupName = ""
-                        groupIcon = null
-                        groupDescription = null
-                        showCreateGroup = true
-                    },
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                ) {
-                    Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = stringResource(id = R.string.new_group))
-                }
-                FloatingActionButton(onClick = onCreateEventFromFab) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(id = R.string.new_event))
-                }
+            FloatingActionButton(
+                onClick = {
+                    groupName = ""
+                    groupIcon = null
+                    groupDescription = null
+                    showCreateGroup = true
+                },
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            ) {
+                Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = stringResource(id = R.string.new_group))
             }
+        },
+        bottomBar = {
+            val openDateTimePicker = {
+                val calendar = Calendar.getInstance().apply {
+                    timeInMillis = if (draft.hasCustomDateTime) {
+                        draft.eventDateMillis
+                    } else {
+                        System.currentTimeMillis()
+                    }
+                }
+                DatePickerDialog(
+                    context,
+                    { _, year, month, dayOfMonth ->
+                        calendar.set(Calendar.YEAR, year)
+                        calendar.set(Calendar.MONTH, month)
+                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                        TimePickerDialog(
+                            context,
+                            { _, hourOfDay, minute ->
+                                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                                calendar.set(Calendar.MINUTE, minute)
+                                eventDraftViewModel.updateEventDateMillis(calendar.timeInMillis)
+                            },
+                            calendar.get(Calendar.HOUR_OF_DAY),
+                            calendar.get(Calendar.MINUTE),
+                            false
+                        ).show()
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                ).show()
+            }
+
+            EventComposerBar(
+                text = draft.text,
+                selectedDateMillis = draft.eventDateMillis,
+                hasCustomDateTime = draft.hasCustomDateTime,
+                onTextChange = eventDraftViewModel::updateText,
+                onPickDateTime = openDateTimePicker,
+                onSend = {
+                    if (draft.text.isNotBlank()) {
+                        eventDraftViewModel.setSourceGroupId(null)
+                        onCreateEventRequested()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
         },
         snackbarHost = { SnackbarHost(hostState = snackbars) }
     ) { inner ->
@@ -340,7 +373,6 @@ fun GroupsScreen(
         }
     }
 }
-
 @Composable
 private fun GroupHeaderAction(
     icon: ImageVector,
@@ -488,89 +520,6 @@ private fun SearchResultRow(
                 overflow = TextOverflow.Ellipsis
             )
         }
-    }
-}
-
-@Composable
-fun GroupIconView(
-    name: String,
-    icon: String?,
-    size: Dp,
-    fontSize: TextUnit = 16.sp
-) {
-    val backgroundColor = com.dimento.app.presentation.theme.getGroupIconBackgroundColor(name)
-    val contentColor = com.dimento.app.presentation.theme.getContrastColor(backgroundColor)
-
-    Box(
-        modifier = Modifier
-            .size(size)
-            .clip(CircleShape)
-            .background(backgroundColor),
-        contentAlignment = Alignment.Center
-    ) {
-        if (icon != null) {
-            if (icon.startsWith("vector:")) {
-                val iconName = icon.removePrefix("vector:")
-                val vector = getVectorIconByName(iconName)
-                Icon(
-                    imageVector = vector,
-                    contentDescription = null,
-                    modifier = Modifier.size(size * 0.6f),
-                    tint = contentColor
-                )
-            } else {
-                val model = when {
-                    icon.startsWith("/") -> File(icon)
-                    icon.startsWith("file://") -> File(icon.removePrefix("file://"))
-                    else -> icon
-                }
-                AsyncImage(
-                    model = model,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-        } else {
-            val initials = remember(name) {
-                if (name.isBlank()) "?"
-                else {
-                    val words = name.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
-                    if (words.size >= 2) {
-                        (words[0].take(1) + words[1].take(1)).uppercase()
-                    } else if (words.isNotEmpty()) {
-                        words[0].take(2).uppercase()
-                    } else {
-                        "?"
-                    }
-                }
-            }
-            Text(
-                text = initials,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontSize = fontSize,
-                    fontWeight = FontWeight.Bold
-                ),
-                color = contentColor
-            )
-        }
-    }
-}
-
-private fun getVectorIconByName(name: String): ImageVector {
-    return when (name) {
-        "work" -> Icons.Default.Work
-        "office" -> Icons.Default.Apartment
-        "machine" -> Icons.Default.PrecisionManufacturing
-        "bike" -> Icons.AutoMirrored.Filled.DirectionsBike
-        "car" -> Icons.Default.DirectionsCar
-        "person" -> Icons.Default.Person
-        "group" -> Icons.Default.Group
-        "team" -> Icons.Default.Groups
-        "building" -> Icons.Default.Apartment
-        "real_estate" -> Icons.Default.RealEstateAgent
-        "tools" -> Icons.Default.Build
-        else -> Icons.Default.AddCircle
     }
 }
 

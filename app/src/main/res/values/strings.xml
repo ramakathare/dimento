@@ -8,14 +8,11 @@
     <string name="channel_due_today_name">Today\'s Events</string>
     <string name="channel_due_today_description">Reminders for events scheduled for today</string>
 
-    <string name="create_event_title">Create Event</string>
     <string name="select_group_title">Select Group</string>
     <string name="change_photo">Change Photo</string>
     <string name="remove">Remove</string>
     <string name="pick_a_clipart">Pick a clipart</string>
     <string name="write_memory_placeholder">Write event...</string>
-    <string name="when_label">When?</string>
-    <string name="what_label">What?</string>
     <string name="groups_label">Groups</string>
     <string name="events_label">Events</string>
     <string name="cancel">Cancel</string>
@@ -37,6 +34,8 @@
     <string name="delete_group">Delete group</string>
     <string name="new_group">New group</string>
     <string name="new_event">New event</string>
+    <string name="pick_date_time">Pick date and time</string>
+    <string name="send_event">Send event</string>
     <string name="create_group_title">Create Group</string>
     <string name="edit_group_title">Edit Group</string>
     <string name="create_label">Create</string>

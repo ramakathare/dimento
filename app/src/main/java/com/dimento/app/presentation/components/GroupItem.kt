@@ -27,12 +27,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dimento.app.domain.model.GroupSummary
-import com.dimento.app.presentation.groups.GroupIconView
+import com.dimento.app.presentation.components.GroupIconView
 import com.dimento.app.core.DateFormats
 import androidx.compose.ui.res.stringResource
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
