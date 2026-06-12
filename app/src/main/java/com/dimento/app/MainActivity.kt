@@ -1,12 +1,14 @@
 package com.dimento.app
 
 import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,8 +20,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,10 +37,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -63,17 +71,24 @@ import com.dimento.app.presentation.timeline.GroupTimelineViewModel
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        permissions.forEach { (permission, _) ->
-            PermissionManager.markAsked(this, permission)
-        }
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        // After notification permission, request exact alarm settings
+        requestExactAlarmIfNeeded()
+    }
+
+    /**
+     * Launcher for the SCHEDULE_EXACT_ALARM system-settings screen (API 34+).
+     */
+    private val exactAlarmSettingsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        // Returned from exact alarm settings
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestNeededPermissions()
         enableEdgeToEdge()
         setContent {
             DiMentoTheme {
@@ -82,10 +97,35 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun requestNeededPermissions() {
-        val permissions = PermissionManager.getPermissionsToRequest(this)
-        if (permissions.isNotEmpty()) {
-            permissionLauncher.launch(permissions.toTypedArray())
+    /**
+     * Starts the permission flow: first notifications, then exact alarm settings.
+     */
+    fun startPermissionFlow() {
+        // Step 1: Request notifications (runtime dialog)
+        if (Build.VERSION.SDK_INT >= 33) {
+            val isGranted = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!isGranted) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                return // Step 2 (exact alarm) will be triggered from the callback
+            }
+        }
+        // Notifications already granted or not needed → go to step 2
+        requestExactAlarmIfNeeded()
+    }
+
+    /**
+     * On API 34+, SCHEDULE_EXACT_ALARM must be granted via system settings.
+     */
+    private fun requestExactAlarmIfNeeded() {
+        if (PermissionManager.needsExactAlarmSettings(this)) {
+            try {
+                val intent = PermissionManager.openExactAlarmSettings(this)
+                exactAlarmSettingsLauncher.launch(intent)
+            } catch (e: Exception) {
+                // Failed to open exact alarm settings
+            }
         }
     }
 }
@@ -93,17 +133,77 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun DiMentoAppRoot() {
     var showSplash by remember { mutableStateOf(true) }
+    var showPermissionDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val activity = context as? ComponentActivity
 
     LaunchedEffect(Unit) {
-        delay(800)
+        delay(500)
         showSplash = false
+        // Check if we need to show the permission prompt
+        if (activity != null && !PermissionManager.hasSkipped(context)) {
+            val needsNotifications = Build.VERSION.SDK_INT >= 33 &&
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            val needsExactAlarm = PermissionManager.needsExactAlarmSettings(context)
+            if (needsNotifications || needsExactAlarm) {
+                showPermissionDialog = true
+            }
+        }
     }
 
     if (showSplash) {
         SplashScreen()
     } else {
         DiMentoAppContent()
+
+        // Permission explanation dialog
+        if (showPermissionDialog) {
+            PermissionExplanationDialog(
+                onOk = {
+                    showPermissionDialog = false
+                    (activity as? MainActivity)?.startPermissionFlow()
+                },
+                onSkip = {
+                    showPermissionDialog = false
+                    PermissionManager.markSkipped(context)
+                }
+            )
+        }
     }
+}
+
+@Composable
+private fun PermissionExplanationDialog(onOk: () -> Unit, onSkip: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onSkip,
+        title = {
+            Text(text = stringResource(R.string.permission_title))
+        },
+        text = {
+            Text(
+                text = buildAnnotatedString {
+                    append("DiMento needs a couple of permissions to work properly:\n\n")
+                    append("1. 🔔 ")
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Notifications") }
+                    append(" — to remind you of events due today\n")
+                    append("2. ⏰ ")
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Set alarms & reminders") }
+                    append(" — to notify you at the exact event time")
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onOk) {
+                Text(stringResource(R.string.permission_ok))
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onSkip) {
+                Text(stringResource(R.string.permission_skip))
+            }
+        }
+    )
 }
 
 @Composable

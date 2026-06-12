@@ -35,7 +35,13 @@ object EventNotificationScheduler {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, eventDateMillis, pendingIntent)
         } catch (e: SecurityException) {
             // SCHEDULE_EXACT_ALARM permission not granted — fall back to set()
-            alarmManager.set(AlarmManager.RTC_WAKEUP, eventDateMillis, pendingIntent)
+            try {
+                alarmManager.set(AlarmManager.RTC_WAKEUP, eventDateMillis, pendingIntent)
+            } catch (_: Exception) {
+                // Unable to schedule any alarm
+            }
+        } catch (_: Exception) {
+            // Unexpected error scheduling alarm
         }
     }
 

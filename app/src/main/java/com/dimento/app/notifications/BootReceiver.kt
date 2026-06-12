@@ -23,9 +23,15 @@ class BootReceiver : BroadcastReceiver() {
                 val now = System.currentTimeMillis()
                 events.forEach { (event, _) ->
                     if (event.completedDateMillis == null && event.eventDateMillis > now) {
-                        EventNotificationScheduler.schedule(context, event.id, event.eventDateMillis)
+                        try {
+                            EventNotificationScheduler.schedule(context, event.id, event.eventDateMillis)
+                        } catch (_: Exception) {
+                            // Skip events that fail to schedule
+                        }
                     }
                 }
+            } catch (_: Exception) {
+                // BootReceiver error
             } finally {
                 pendingResult.finish()
             }
